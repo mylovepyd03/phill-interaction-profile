@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareProfile | 환자 주도형 복약관리</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#6d7688;--line:#e6e9ef;--primary:#4f67d8;--primary2:#eef1ff;--danger:#d95757;--warn:#b87913;--green:#2d8a67;--shadow:0 8px 24px rgba(28,40,72,.07)}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,"Noto Sans KR",Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit} button{cursor:pointer;border:0}
+.app{display:flex;min-height:100vh}.sidebar{width:240px;background:#fff;border-right:1px solid var(--line);padding:28px 16px;position:fixed;inset:0 auto 0 0}
+.logo{font-size:21px;font-weight:800;padding:0 14px 30px}.logo span{color:var(--primary)}
+.nav button{display:block;width:100%;text-align:left;background:transparent;padding:13px 14px;border-radius:10px;color:#566074;margin:4px 0}
+.nav button.active,.nav button:hover{background:var(--primary2);color:var(--primary);font-weight:700}
+.main{margin-left:240px;width:calc(100% - 240px);padding:34px 42px 60px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}
+h1{font-size:28px;margin:0 0 7px}.subtitle{color:var(--muted);font-size:14px}.profile-chip{background:#fff;border:1px solid var(--line);padding:9px 13px;border-radius:20px;font-size:13px}
+.page{display:none}.page.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.grid2{display:grid;grid-template-columns:1.35fr 1fr;gap:18px;margin-top:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:20px;box-shadow:var(--shadow)}
+.stat-label{font-size:13px;color:var(--muted)}.stat{font-size:28px;font-weight:800;margin:8px 0}.stat-note{font-size:12px;color:var(--green)}
+.card-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.card-title h3{margin:0;font-size:16px}
+.badge{padding:5px 9px;border-radius:999px;font-size:11px;font-weight:700}.blue{background:#eef1ff;color:#4f67d8}.red{background:#fff0f0;color:#c94c4c}.yellow{background:#fff7e6;color:#a66d12}.green{background:#eaf8f2;color:#287a5d}
+.item{padding:13px 0;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:12px}.item:first-child{border-top:0;padding-top:0}
+.item b{font-size:14px}.small{font-size:12px;color:var(--muted);margin-top:4px}
+.alert{background:#fff8ea;border:1px solid #f3dfb7;border-radius:12px;padding:14px;margin-top:12px}.alert strong{color:#9b6815}
+.btn{background:var(--primary);color:#fff;border-radius:9px;padding:10px 14px;font-weight:700}.btn.secondary{background:#f0f2f7;color:#4d5668}.btn.danger{background:#fff0f0;color:#c64d4d}.btn.smallbtn{padding:7px 10px;font-size:12px}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap}.toolbar .btn{margin-left:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:13px 9px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:600}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:7px}.field input,.field select,.field textarea{width:100%;padding:11px;border:1px solid #dfe3eb;border-radius:9px;background:#fff;outline:none}.field input:focus,.field textarea:focus{border-color:var(--primary)}
+.modal{position:fixed;inset:0;background:rgba(14,22,39,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:10}.modal.show{display:flex}.modalbox{background:#fff;border-radius:17px;width:min(650px,100%);padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.close{background:#f1f3f7;width:32px;height:32px;border-radius:50%}
+.voice{background:linear-gradient(135deg,#f0f2ff,#fafbff);border:1px solid #dfe4ff;border-radius:14px;padding:22px;text-align:center}.mic{width:72px;height:72px;border-radius:50%;background:var(--primary);color:#fff;font-size:28px;margin:15px auto}.question{font-size:18px;font-weight:700;margin:12px 0}.answers{display:flex;gap:10px;justify-content:center}.answers button{padding:10px 20px;border-radius:9px;background:#fff;border:1px solid #d9deea}.answers button:hover{border-color:var(--primary);color:var(--primary)}
+.progress{height:7px;background:#e9ecf4;border-radius:99px;overflow:hidden;margin:15px 0}.progress div{height:100%;background:var(--primary);width:25%;transition:.3s}
+.timeline{border-left:2px solid #dfe3ee;padding-left:20px}.event{position:relative;margin:0 0 22px}.event:before{content:"";position:absolute;left:-27px;top:3px;width:10px;height:10px;border-radius:50%;background:var(--primary)}
+.toggle{display:flex;align-items:center;justify-content:space-between;padding:15px 0;border-bottom:1px solid var(--line)}.switch{width:44px;height:24px;border-radius:20px;background:#cfd4df;position:relative}.switch.on{background:var(--primary)}.switch:after{content:"";position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:3px;left:3px;transition:.2s}.switch.on:after{left:23px}
+.toast{position:fixed;right:25px;bottom:25px;background:#172033;color:#fff;padding:13px 17px;border-radius:10px;display:none;z-index:20}
+@media(max-width:900px){.sidebar{width:190px}.main{margin-left:190px;width:calc(100% - 190px);padding:25px}.grid{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr}}
+@media(max-width:650px){.sidebar{position:static;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line)}.app{display:block}.main{margin-left:0;width:100%}.nav{display:flex;overflow:auto}.nav button{white-space:nowrap}.logo{padding-bottom:15px}.top{align-items:flex-start}.grid{grid-template-columns:1fr}}
+.section-divider{height:1px;background:var(--line);margin:20px 0}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.lifestyle-card{border:1px solid var(--line);border-radius:12px;padding:15px}.lifestyle-card select,.lifestyle-card input{width:100%;padding:10px;border:1px solid #dfe3eb;border-radius:8px;margin-top:10px;background:#fff}.choice-row{display:flex;gap:12px;flex-wrap:wrap}.circle-choice{background:#fff;border:0;display:flex;flex-direction:column;align-items:center;gap:7px;min-width:64px}.circle-choice span{width:50px;height:50px;border:2px solid #dfe3eb;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#596276}.circle-choice.selected span{border-color:var(--primary);background:var(--primary);color:#fff;box-shadow:0 0 0 5px var(--primary2)}.circle-choice small{font-size:11px;color:var(--muted)}.pill-choice{background:#fff;border:1px solid #dfe3eb;border-radius:20px;padding:10px 16px;color:#596276}.pill-choice.selected{border-color:var(--primary);background:var(--primary2);color:var(--primary);font-weight:700}.med-tabs{display:flex;gap:7px;border-bottom:1px solid var(--line)}.med-tab{background:transparent;padding:12px 14px;color:var(--muted);border-bottom:3px solid transparent}.med-tab.active{color:var(--primary);border-color:var(--primary);font-weight:700}.med-tab span{background:#eef1f7;border-radius:10px;padding:2px 6px;font-size:11px}.med-row{display:flex;align-items:center;gap:12px;padding:16px 4px;border-bottom:1px solid var(--line)}.med-row>div{flex:1}.edit-btn{background:#f1f3f7;color:#536078;padding:7px 10px;border-radius:8px;font-size:12px}.med-row.hidden{display:none}.helper-note{background:#f8f9fc;border-radius:12px;padding:15px;margin-top:18px;font-size:12px;line-height:1.8;color:#5d6678}.upload-box{border:2px dashed #cfd6e5;border-radius:14px;padding:35px 20px;text-align:center;background:#fafbfe}.upload-box:hover{border-color:var(--primary);background:#f7f8ff}</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="logo">Care<span>Profile</span></div>
+  <nav class="nav">
+    <button class="active" data-page="dashboard">대시보드</button>
+    <button data-page="profile">내 건강정보</button><button data-page="meds">복용약물</button>
+    <button data-page="check">AI 음성 문진</button>
+    <button data-page="update">건강정보 업데이트</button>
+    <button data-page="risk">약물 위험 분석</button>
+    <button data-page="share">의료진 공유</button>
+  </nav>
+</aside>
+
+<main class="main">
+<div class="top"><div><h1 id="pageTitle">안녕하세요, 김지현님</h1><div class="subtitle">내 건강정보를 직접 관리하고 의료진과 안전하게 공유하세요.</div></div><div class="profile-chip">환자 주도형 건강 프로파일</div></div>
+
+<section id="dashboard" class="page active">
+  <div class="grid">
+    <div class="card"><div class="stat-label">현재 복용약</div><div class="stat" id="medCount">8종</div><div class="stat-note">최근 1종 추가</div></div>
+    <div class="card"><div class="stat-label">최근 보고 증상</div><div class="stat">2건</div><div class="stat-note">어지럼증 · 변비</div></div>
+    <div class="card"><div class="stat-label">주의사항</div><div class="stat">2건</div><div class="stat-note">의료진 확인 권장</div></div>
+    <div class="card"><div class="stat-label">정보 최신화</div><div class="stat">오늘</div><div class="stat-note">마지막 업데이트 16:20</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title"><h3>오늘의 복약 안전 요약</h3><span class="badge yellow">확인 필요</span></div>
+      <div class="alert"><strong>어지럼증이 보고되었습니다.</strong><div class="small">현재 복용 중인 약물 중 일부가 어지럼증·졸림과 관련될 수 있습니다. 약을 임의로 중단하지 말고 의료진 또는 약사와 상담하세요.</div></div>
+      <div class="alert"><strong>변비가 새로 보고되었습니다.</strong><div class="small">현재 복약 프로파일과 함께 의료진에게 전달하면 약물 관련 가능성을 검토하는 데 도움이 됩니다.</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><h3>최근 건강정보</h3><button class="btn smallbtn" onclick="openModal('updateModal')">+ 추가</button></div>
+      <div class="item"><div><b>진통제 추가</b><div class="small">오늘 · 약국에서 구입</div></div><span class="badge blue">약물</span></div>
+      <div class="item"><div><b>어지럼증</b><div class="small">어제 · 기립 시 발생</div></div><span class="badge red">증상</span></div>
+      <div class="item"><div><b>비타민D</b><div class="small">8월 18일 · 복용 시작</div></div><span class="badge green">영양제</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="profile" class="page"><div class="grid2"><div class="card"><div class="card-title"><h3>기본정보</h3><span class="badge blue">내가 직접 관리</span></div><div class="formgrid"><div class="field"><label>이름</label><input value="김지현"></div><div class="field"><label>나이</label><input value="72세"></div><div class="field"><label>직업</label><input placeholder="예: 주부, 회사원, 자영업"></div><div class="field"><label>독거 여부</label><select><option>가족과 함께 거주</option><option>혼자 거주</option><option>기타</option></select></div><div class="field"><label>키</label><input placeholder="cm"></div><div class="field"><label>몸무게</label><input placeholder="kg"></div></div></div><div class="card"><div class="card-title"><h3>병력</h3><span class="badge yellow">선택 입력</span></div><div class="field"><label>현재 또는 과거에 진단받은 질환·평소 자주 겪는 증상</label><select id="historySelect"><option>선택해주세요</option><option>고혈압</option><option>당뇨</option><option>고지혈증</option><option>심장질환</option><option>뇌혈관질환</option><option>치매·인지장애</option><option>관절염</option><option>골다공증</option><option>신장질환</option><option>두통 등 경미한 증상</option><option>기타</option></select></div><div class="small" style="margin-top:12px">두통, 어깨 결림, 허리 통증처럼 병원 진단을 받지 않았더라도 평소 자주 겪는 증상을 기록할 수 있습니다.</div><div class="field" id="otherHistoryWrap" style="margin-top:12px;display:none"><label>기타 내용</label><input placeholder="직접 입력해주세요"></div></div></div><div class="card" style="margin-top:18px"><div class="card-title"><h3>알레르기 / 생활습관</h3></div><div class="formgrid"><div class="field"><label>약이나 음식 알레르기가 있나요?</label><select><option>없음</option><option>있음</option><option>잘 모르겠음</option></select></div><div class="field"><label>알레르기 내용</label><input placeholder="예: 페니실린, 땅콩 등"></div></div><div class="section-divider"></div><b>기억력 자가 체크</b><div class="small" style="margin:5px 0 12px">최근 자신의 기억력이 어느 정도라고 느끼시나요?</div><div class="choice-row" id="memoryChoices"><button class="circle-choice" onclick="selectCircle(this,'memoryChoices')"><span>1</span><small>매우 좋음</small></button><button class="circle-choice" onclick="selectCircle(this,'memoryChoices')"><span>2</span><small>좋은 편</small></button><button class="circle-choice" onclick="selectCircle(this,'memoryChoices')"><span>3</span><small>보통</small></button><button class="circle-choice" onclick="selectCircle(this,'memoryChoices')"><span>4</span><small>조금 불편</small></button><button class="circle-choice" onclick="selectCircle(this,'memoryChoices')"><span>5</span><small>많이 불편</small></button></div><div class="section-divider"></div><div class="field"><label>최근 6개월 사이 어지러워 넘어지거나 비틀거린 적이 있나요?</label><div class="choice-row" id="fallChoices"><button class="pill-choice" onclick="selectCircle(this,'fallChoices')">없음</button><button class="pill-choice" onclick="selectCircle(this,'fallChoices')">1번</button><button class="pill-choice" onclick="selectCircle(this,'fallChoices')">2번 이상</button><button class="pill-choice" onclick="selectCircle(this,'fallChoices')">기억나지 않음</button></div></div><div class="section-divider"></div><div class="grid3"><div class="lifestyle-card"><b>음주</b><div class="small">여부·주기·양</div><select><option>안 마심</option><option>가끔</option><option>주 1~2회</option><option>주 3회 이상</option></select><input placeholder="예: 소주 3잔 / 1회"></div><div class="lifestyle-card"><b>카페인(커피·차 등)</b><div class="small">여부·주기·양</div><select><option>안 마심</option><option>가끔</option><option>하루 1잔</option><option>하루 2~3잔</option><option>하루 4잔 이상</option></select><input placeholder="예: 아메리카노 2잔 / 하루"></div><div class="lifestyle-card"><b>흡연</b><div class="small">여부·주기·양</div><select><option>피우지 않음</option><option>가끔</option><option>매일</option><option>현재 금연</option></select><input placeholder="예: 하루 5개비"></div></div><div style="margin-top:18px;text-align:right"><button class="btn" onclick="toast('건강정보를 저장했습니다.')">저장하기</button></div></div></section>
+<section id="meds" class="page"><div class="card"><div class="card-title"><div><h3>복용약물</h3><div class="small">현재 먹고 있는 약과 최근 중단한 약을 관리합니다.</div></div><div class="toolbar"><button class="btn secondary" onclick="openModal('photoModal')">📷 약봉투 사진으로 등록</button><button class="btn" onclick="openModal('medModal')">+ 직접 입력</button></div></div><div class="med-tabs"><button class="med-tab active" onclick="filterMeds('recent',this)">최근 추가된 약물 <span>2</span></button><button class="med-tab" onclick="filterMeds('current',this)">복용 중인 약물 <span>4</span></button><button class="med-tab" onclick="filterMeds('stopped',this)">중단한 약물 <span>1</span></button></div><div id="medCards"><div class="med-row recent current"><div><b>아세트아미노펜 500mg</b><div class="small">두통·관절통 진통제 · 오늘 추가</div></div><span class="badge yellow">최근 추가</span><button class="edit-btn" onclick="editMed(this)">수정</button></div><div class="med-row recent current"><div><b>비타민 D</b><div class="small">영양제 · 8월 18일 추가</div></div><span class="badge yellow">최근 추가</span><button class="edit-btn" onclick="editMed(this)">수정</button></div><div class="med-row current"><div><b>아모디핀정 5mg</b><div class="small">병원에서 처방받은 약 · 1일 1회</div></div><span class="badge green">복용 중</span><button class="edit-btn" onclick="editMed(this)">수정</button></div><div class="med-row current"><div><b>메트포르민정 500mg</b><div class="small">병원에서 처방받은 약 · 1일 2회</div></div><span class="badge green">복용 중</span><button class="edit-btn" onclick="editMed(this)">수정</button></div><div class="med-row current"><div><b>오메가3</b><div class="small">영양제, 비타민, 한약 등 따로 챙겨먹는 약 · 1일 1회</div></div><span class="badge green">복용 중</span><button class="edit-btn" onclick="editMed(this)">수정</button></div><div class="med-row stopped"><div><b>이부프로펜</b><div class="small">두통·관절통 진통제 · 8월 10일 중단</div></div><span class="badge red">중단</span><button class="edit-btn" onclick="editMed(this)">수정</button></div></div><div class="helper-note"><b>💡 어떤 약을 등록해야 하나요?</b><br><b>병원에서 처방받은 약</b> — 병원 진료 후 처방받아 먹는 약<br><b>처방전 없이 약국에서 직접 산 약</b> — 예: 두통·관절통 진통제(탁센, 타이레놀), 감기약, 속쓰림약(제산제), 파스 등<br><b>영양제, 비타민, 한약 등 따로 챙겨먹는 약</b> — 예: 홍삼, 종합비타민, 오메가3, 은행잎 추출물, 칼슘, 유산균, 한약, 즙 등</div></div></section>
+<section id="check" class="page">
+  <div class="card">
+    <div class="card-title"><h3>노인 친화 AI 음성 문진</h3><span class="badge blue">시연용</span></div>
+    <div class="voice">
+      <div class="small">복약 관련 증상을 짧게 확인합니다. 실제 의료진의 판단을 대신하지 않습니다.</div>
+      <div class="progress"><div id="progress"></div></div>
+      <div class="mic">●</div>
+      <div class="question" id="question">최근 입이 평소보다 많이 마르셨나요?</div>
+      <div class="answers"><button onclick="answer('예')">예</button><button onclick="answer('아니오')">아니오</button><button onclick="answer('모르겠어요')">모르겠어요</button></div>
+      <div id="checkResult" class="small" style="margin-top:18px"></div>
+    </div>
+  </div>
+</section>
+
+<section id="update" class="page">
+  <div class="card">
+    <div class="card-title"><h3>건강정보 업데이트</h3><button class="btn" onclick="openModal('updateModal')">새로운 정보 입력</button></div>
+    <div class="timeline">
+      <div class="event"><b>진통제 추가</b><div class="small">오늘 16:20 · 약국에서 구입한 일반의약품</div></div>
+      <div class="event"><b>어지럼증 보고</b><div class="small">8월 19일 · 일어날 때 어지러움</div></div>
+      <div class="event"><b>비타민 D 복용 시작</b><div class="small">8월 18일 · 건강기능식품</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="risk" class="page">
+  <div class="grid2">
+    <div class="card"><div class="card-title"><h3>약물 위험 분석</h3><span class="badge yellow">2건 확인 필요</span></div>
+      <div class="alert"><strong>① 어지럼증 관련 가능성</strong><div class="small">최근 보고된 어지럼증과 현재 복용약의 알려진 이상반응을 함께 검토하세요.</div><div style="margin-top:10px"><button class="btn secondary smallbtn" onclick="toast('의료진 검토 항목으로 표시했습니다.')">검토 항목으로 표시</button></div></div>
+      <div class="alert"><strong>② 중복·상호작용 검토</strong><div class="small">최근 추가된 일반의약품을 포함해 전체 복용약 목록을 의료진 또는 약사에게 확인받는 것을 권장합니다.</div></div>
+    </div>
+    <div class="card"><div class="card-title"><h3>분석 범주</h3></div>
+      <div class="item"><div><b>약물-약물 상호작용</b></div><span class="badge green">낮음</span></div>
+      <div class="item"><div><b>중복 처방</b></div><span class="badge green">없음</span></div>
+      <div class="item"><div><b>고령자 주의 약물</b></div><span class="badge yellow">검토</span></div>
+      <div class="item"><div><b>기저질환 관련</b></div><span class="badge yellow">검토</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="share" class="page">
+  <div class="grid2">
+    <div class="card"><div class="card-title"><h3>의료진 공유</h3><span class="badge green">환자 동의 기반</span></div>
+      <div class="toggle"><div><b>현재 복용약</b><div class="small">처방약·일반의약품·영양제</div></div><div class="switch on" onclick="toggle(this)"></div></div>
+      <div class="toggle"><div><b>약물 이상반응</b><div class="small">최근 증상 및 과거 이상반응</div></div><div class="switch on" onclick="toggle(this)"></div></div>
+      <div class="toggle"><div><b>건강정보 변경 이력</b><div class="small">최근 추가·중단·변경 내역</div></div><div class="switch on" onclick="toggle(this)"></div></div>
+      <div class="toggle"><div><b>생활습관 정보</b><div class="small">선택적으로 공유</div></div><div class="switch" onclick="toggle(this)"></div></div>
+      <button class="btn" style="margin-top:18px" onclick="toast('현재 설정으로 의료진 공유 요약을 생성했습니다.')">공유 요약 생성</button>
+    </div>
+    <div class="card"><div class="card-title"><h3>열람 기록</h3></div>
+      <div class="item"><div><b>약사 · 복약지도</b><div class="small">오늘 15:40</div></div><span class="badge blue">열람</span></div>
+      <div class="item"><div><b>내과 · 진료</b><div class="small">8월 12일 10:12</div></div><span class="badge blue">열람</span></div>
+      <div class="small" style="margin-top:15px">누가 언제 어떤 정보를 확인했는지 기록하여 환자가 공유 범위를 관리할 수 있습니다.</div>
+    </div>
+  </div>
+</section>
+</main>
+</div>
+
+<div class="modal" id="photoModal"><div class="modalbox"><div class="modalhead"><h3>약봉투 사진으로 등록</h3><button class="close" onclick="closeModal('photoModal')">×</button></div><div class="upload-box" onclick="document.getElementById('medPhoto').click()"><div style="font-size:38px">📷</div><b>약봉투 또는 처방전 사진을 찍어 올려주세요</b><div class="small">사진을 올리면 약 이름, 용량, 복용법을 확인하기 쉽게 정리할 수 있습니다.</div><input id="medPhoto" type="file" accept="image/*" capture="environment" style="display:none" onchange="showPhoto(this)"><button class="btn secondary" style="margin-top:12px" type="button">사진 선택하기</button></div><div id="photoPreview" class="small" style="margin-top:14px"></div><div style="margin-top:18px;text-align:right"><button class="btn secondary" onclick="closeModal('photoModal')">취소</button> <button class="btn" onclick="registerPhotoMed()">사진으로 등록하기</button></div></div></div>
+<div class="modal" id="medModal"><div class="modalbox"><div class="modalhead"><h3>약물 추가</h3><button class="close" onclick="closeModal('medModal')">×</button></div>
+  <div class="formgrid"><div class="field"><label>약물명</label><input id="newMed" placeholder="예: 타이레놀 500mg"></div><div class="field"><label>구분</label><select id="medType"><option>병원에서 처방받은 약</option><option>처방전 없이 약국에서 직접 산 약</option><option>영양제, 비타민, 한약 등 따로 챙겨먹는 약</option></select></div><div class="field"><label>복용법</label><input id="dose" placeholder="예: 필요 시"></div><div class="field"><label>처방/구입처</label><input id="source" placeholder="예: 약국"></div></div>
+  <div style="margin-top:18px;display:flex;justify-content:flex-end;gap:8px"><button class="btn secondary" onclick="closeModal('medModal')">취소</button><button class="btn" onclick="addMed()">프로파일에 추가</button></div>
+</div></div>
+
+<div class="modal" id="updateModal"><div class="modalbox"><div class="modalhead"><h3>건강정보 업데이트</h3><button class="close" onclick="closeModal('updateModal')">×</button></div>
+  <div class="formgrid"><div class="field"><label>정보 유형</label><select id="updateType"><option>새로운 증상</option><option>새로운 처방/약물</option><option>건강기능식품</option><option>약물 중단/변경</option></select></div><div class="field"><label>발생/변경 시점</label><input type="date"></div></div>
+  <div class="field" style="margin-top:14px"><label>내용</label><textarea id="updateText" rows="4" placeholder="예: 일어날 때 어지럼증이 있었음"></textarea></div>
+  <div style="margin-top:18px;display:flex;justify-content:flex-end;gap:8px"><button class="btn secondary" onclick="closeModal('updateModal')">취소</button><button class="btn" onclick="saveUpdate()">저장</button></div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const pages={dashboard:'대시보드',profile:'내 건강정보',meds:'복용약물',check:'AI 음성 문진',update:'건강정보 업데이트',risk:'약물 위험 분석',share:'의료진 공유'};
+document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(b.dataset.page).classList.add('active');document.getElementById('pageTitle').textContent=pages[b.dataset.page]==='대시보드'?'안녕하세요, 김지현님':pages[b.dataset.page];}));
+function openModal(id){document.getElementById(id).classList.add('show')}function closeModal(id){document.getElementById(id).classList.remove('show')}
+function toast(t){const e=document.getElementById('toast');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',2200)}
+function addMed(){let n=document.getElementById('newMed').value.trim();if(!n){toast('약 이름을 입력해주세요.');return}let modal=document.getElementById('medModal');if(modal.dataset.editing==='1'){let row=document.querySelectorAll('.med-row')[Number(modal.dataset.rowIndex)];if(row)row.querySelector('b').textContent=n;delete modal.dataset.editing;delete modal.dataset.rowIndex;closeModal('medModal');toast('약물 정보를 수정했습니다.');return}let type=document.getElementById('medType').value,d=document.getElementById('dose').value||'정보 입력 필요';let card=document.createElement('div');card.className='med-row recent current';card.innerHTML=`<div><b>${n}</b><div class="small">${type} · ${d}</div></div><span class="badge yellow">최근 추가</span><button class="edit-btn" onclick="editMed(this)">수정</button>`;document.getElementById('medCards').prepend(card);closeModal('medModal');toast('복용약물에 추가했습니다.')}
+function saveUpdate(){let t=document.getElementById('updateText').value.trim();if(!t){toast('내용을 입력해주세요.');return}closeModal('updateModal');toast('건강정보가 업데이트되었습니다.')}
+function toggle(e){e.classList.toggle('on');toast('공유 설정을 변경했습니다.')}
+let qi=0;const qs=['최근 입이 평소보다 많이 마르셨나요?','최근 변비가 새로 생겼거나 심해졌나요?','일어날 때 어지럽거나 휘청거린 적이 있나요?','최근 평소보다 졸리거나 멍한 느낌이 있었나요?'];
+function answer(a){let result=document.getElementById('checkResult');if(a==='예')result.textContent='증상이 기록되었습니다. 현재 복약 정보와 함께 의료진 검토 항목으로 연결할 수 있습니다.';else result.textContent='응답을 기록했습니다.';qi++;if(qi<qs.length){document.getElementById('question').textContent=qs[qi];document.getElementById('progress').style.width=((qi+1)/qs.length*100)+'%'}else{document.getElementById('question').textContent='문진이 완료되었습니다.';document.querySelector('.answers').innerHTML='<button onclick="location.reload()">다시 시작</button>';document.getElementById('progress').style.width='100%';result.textContent='문진 결과가 건강 프로파일에 반영되었습니다. 의료진 상담이 필요한 항목은 별도로 표시됩니다.'}}
+document.getElementById('historySelect')?.addEventListener('change',function(){document.getElementById('otherHistoryWrap').style.display=this.value==='기타'?'block':'none'});function selectCircle(el,group){document.querySelectorAll('#'+group+' .circle-choice,#'+group+' .pill-choice').forEach(x=>x.classList.remove('selected'));el.classList.add('selected');toast('선택했습니다.')}function filterMeds(type,btn){document.querySelectorAll('.med-tab').forEach(x=>x.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.med-row').forEach(r=>r.classList.toggle('hidden',!r.classList.contains(type)))}function editMed(btn){let row=btn.closest('.med-row');document.getElementById('newMed').value=row.querySelector('b').textContent;document.getElementById('medModal').dataset.editing='1';document.getElementById('medModal').dataset.rowIndex=[...document.querySelectorAll('.med-row')].indexOf(row);openModal('medModal')}function showPhoto(input){if(input.files&&input.files[0])document.getElementById('photoPreview').innerHTML='<b>선택한 사진:</b> '+input.files[0].name+'<br><span class="small">※ 시연용 프로토타입에서는 실제 OCR 서버로 전송하지 않습니다.</span>'}function registerPhotoMed(){let input=document.getElementById('medPhoto');if(!input.files.length){toast('먼저 약봉투 사진을 선택해주세요.');return}closeModal('photoModal');toast('약봉투 사진이 등록되었습니다. 약물 정보를 확인해주세요.')}</script>
+</body>
+</html>
