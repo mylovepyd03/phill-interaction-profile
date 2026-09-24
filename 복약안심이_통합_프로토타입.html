@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>복약안심이 · 환자 앱 + 의·약사 코파일럿</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F3F5F2; --card:#FFFFFF; --sunk:#E9EDE8; --ink:#15201C; --soft:#46544E; --faint:#66736D; --line:#DAE0DA;
+  --rx:#1D6A73; --rx-soft:#DDEEEF; --rx-deep:#124A51; --on-rx:#FFFFFF;
+  --otc:#6E4FA0; --otc-soft:#ECE6F5;
+  --sup:#5A7A28; --sup-soft:#E8F0DA;
+  --hu:#B2601B; --hu-soft:#F8E9D9; --hu-deep:#80420E; --on-hu:#FFFFFF;
+  --rule:#2F6A4C; --rule-soft:#DFEDE4;
+  --danger:#B42318; --danger-soft:#FBE4E1; --warn:#9A5B00; --warn-soft:#FBEFD6;
+  --shadow:0 1px 2px rgba(21,32,28,.06),0 6px 20px rgba(21,32,28,.06);
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#111916; --card:#19231F; --sunk:#0E1512; --ink:#E5EDE8; --soft:#AEBCB5; --faint:#8D9B94; --line:#2B3833;
+    --rx:#6BB6BF; --rx-soft:#16353A; --rx-deep:#A6DCE2; --on-rx:#0B1C1E;
+    --otc:#B39AE0; --otc-soft:#2A2238; --sup:#A5C46D; --sup-soft:#243019;
+    --hu:#E59A58; --hu-soft:#382618; --hu-deep:#F2BF8E; --on-hu:#221204;
+    --rule:#86C4A2; --rule-soft:#1C3027;
+    --danger:#F08A7E; --danger-soft:#3C1E1B; --warn:#E6B45C; --warn-soft:#352812;
+    --shadow:0 1px 2px rgba(0,0,0,.3);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#111916; --card:#19231F; --sunk:#0E1512; --ink:#E5EDE8; --soft:#AEBCB5; --faint:#8D9B94; --line:#2B3833;
+  --rx:#6BB6BF; --rx-soft:#16353A; --rx-deep:#A6DCE2; --on-rx:#0B1C1E;
+  --otc:#B39AE0; --otc-soft:#2A2238; --sup:#A5C46D; --sup-soft:#243019;
+  --hu:#E59A58; --hu-soft:#382618; --hu-deep:#F2BF8E; --on-hu:#221204;
+  --rule:#86C4A2; --rule-soft:#1C3027;
+  --danger:#F08A7E; --danger-soft:#3C1E1B; --warn:#E6B45C; --warn-soft:#352812;
+  --shadow:0 1px 2px rgba(0,0,0,.3);
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;word-break:keep-all}
+h1,h2,h3,h4{margin:0;line-height:1.35;letter-spacing:-.015em}
+h2{font-size:20px;font-weight:700} h3{font-size:16.5px;font-weight:700} h4{font-size:15px;font-weight:600}
+p{margin:0} ul,ol{margin:0;padding:0;list-style:none}
+button,input,textarea,select{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer}
+img{max-width:100%}
+:focus-visible{outline:3px solid var(--rx);outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1160px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand b{font-size:18px;font-weight:700;letter-spacing:-.02em;display:block;line-height:1.2}
+.brand small{display:block;color:var(--faint);font-size:12.5px}
+.roles{display:flex;background:var(--sunk);border-radius:12px;padding:4px;gap:4px}
+.roles button{border:0;background:transparent;border-radius:9px;padding:8px 16px;min-height:40px;font-weight:600;color:var(--soft)}
+.roles button[aria-pressed="true"]{background:var(--card);color:var(--rx-deep);box-shadow:var(--shadow)}
+.roles button.c[aria-pressed="true"]{color:var(--hu-deep)}
+.notice{max-width:1160px;margin:0 auto;padding:10px 20px 0}
+.notice details{background:var(--hu-soft);color:var(--hu-deep);border-radius:12px;padding:9px 14px;font-size:14px}
+.notice summary{cursor:pointer;font-weight:600}
+.notice ol{list-style:decimal;padding-left:20px;margin-top:6px}
+.notice li{margin-top:2px}
+
+/* layout */
+.pwrap{max-width:540px;margin:0 auto;padding:16px 16px 120px;font-size:17px}
+.cwrap{max-width:1160px;margin:0 auto;padding:18px 20px 60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 18px;box-shadow:var(--shadow)}
+.stack>*+*{margin-top:14px}
+.sec-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:26px 2px 10px}
+.sec-title:first-child{margin-top:4px}
+.hint{color:var(--faint);font-size:14px;line-height:1.55}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.sp{flex:1}
+.muted{color:var(--soft)}
+
+/* tags & buttons */
+.tag{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap;line-height:1.6}
+.t-rule{background:var(--rule-soft);color:var(--rule)} .t-ai{background:var(--rx-soft);color:var(--rx-deep)} .t-hu{background:var(--hu-soft);color:var(--hu-deep)}
+.t-new{background:var(--hu);color:var(--on-hu)} .t-danger{background:var(--danger);color:#fff} .t-warn{background:var(--warn-soft);color:var(--warn)}
+.t-rx{background:var(--rx-soft);color:var(--rx-deep)} .t-otc{background:var(--otc-soft);color:var(--otc)} .t-sup{background:var(--sup-soft);color:var(--sup)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:46px;padding:0 18px;border-radius:12px;border:1.5px solid var(--rx);background:var(--rx);color:var(--on-rx);font-weight:600;text-decoration:none}
+.btn.hu{background:var(--hu);border-color:var(--hu);color:var(--on-hu)}
+.btn.ghost{background:transparent;color:var(--rx-deep);border-color:var(--line)}
+.btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn.sm{min-height:36px;padding:0 12px;font-size:14px;border-radius:10px}
+.btn.block{width:100%}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+.linkbtn{border:0;background:none;color:var(--rx-deep);font-weight:600;padding:4px 0;text-decoration:underline;text-underline-offset:3px}
+input[type=text],input[type=number],textarea,select{width:100%;min-height:46px;padding:10px 13px;border-radius:12px;border:1.5px solid var(--line);background:var(--card)}
+textarea{min-height:90px;resize:vertical;line-height:1.5}
+label.f{display:block;font-size:14px;color:var(--soft);font-weight:600;margin-bottom:5px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button,.opt{border:1.5px solid var(--line);background:var(--card);border-radius:11px;min-height:44px;padding:0 14px;font-weight:600;color:var(--soft)}
+.seg button[aria-pressed="true"],.opt[aria-pressed="true"]{border-color:var(--rx);background:var(--rx-soft);color:var(--rx-deep)}
+.opt.s2[aria-pressed="true"]{border-color:var(--hu);background:var(--hu-soft);color:var(--hu-deep)}
+
+/* pill packets — 약포지 */
+.strip{display:flex;gap:0;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 8px;margin:0 -2px}
+.packet{position:relative;flex:0 0 min(78%,230px);scroll-snap-align:start;background:linear-gradient(180deg,color-mix(in srgb,var(--card) 70%,var(--rx-soft)) 0,var(--card) 60%);border:1px solid var(--line);padding:14px 14px 12px;min-height:198px;display:flex;flex-direction:column}
+.packet:first-child{border-radius:16px 0 0 16px}
+.packet:last-child{border-radius:0 16px 16px 0}
+.packet:only-child{border-radius:16px}
+.packet+.packet{border-left:2px dashed var(--line)}
+.packet .when{font-size:13px;color:var(--rx-deep);font-weight:700;letter-spacing:.02em}
+.packet .slot{font-size:22px;font-weight:700;margin:2px 0 8px}
+.pills{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.pl{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;padding:3px 10px 3px 4px;border-radius:999px;background:var(--card);border:1px solid var(--line)}
+.pl i{width:18px;height:10px;border-radius:6px;display:inline-block;background:linear-gradient(90deg,var(--c) 50%,color-mix(in srgb,var(--c) 30%,var(--card)) 50%)}
+.packet .btn{margin-top:auto}
+.stamp{background:transparent;margin-top:auto;align-self:flex-start;border:2.5px solid var(--rule);color:var(--rule);border-radius:10px;padding:4px 12px;font-weight:700;transform:rotate(-6deg);font-size:15px;animation:stamp .25s ease-out}
+@keyframes stamp{from{transform:rotate(-6deg) scale(1.35);opacity:0}to{transform:rotate(-6deg) scale(1);opacity:1}}
+
+/* risk cards */
+.risk{border:1px solid var(--line);border-left:5px solid var(--rx);border-radius:14px;padding:13px 15px;background:var(--card)}
+.risk+.risk{margin-top:10px}
+.risk.high{border-left-color:var(--danger);background:color-mix(in srgb,var(--danger-soft) 70%,var(--card))}
+.risk.mid{border-left-color:var(--hu);background:color-mix(in srgb,var(--hu-soft) 60%,var(--card))}
+.risk.low{border-left-color:var(--rule)}
+.risk h3{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap}
+.lv{font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;color:#fff;background:var(--rule);flex:none;margin-top:1px}
+.high .lv{background:var(--danger)} .mid .lv{background:var(--hu-deep)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;padding:3px 11px;border-radius:999px;background:var(--sunk);font-size:13.5px;color:var(--soft)}
+.basis{font-size:12.5px;color:var(--faint);margin-top:6px}
+.basis b{color:var(--rule);font-weight:600}
+
+/* med list */
+.med{display:flex;gap:12px;align-items:flex-start;padding:12px 2px;border-top:1px solid var(--line)}
+.med:first-child{border-top:0}
+.cap{width:26px;height:14px;border-radius:8px;flex:none;margin-top:6px;background:linear-gradient(90deg,var(--c) 50%,color-mix(in srgb,var(--c) 28%,var(--card)) 50%);border:1px solid color-mix(in srgb,var(--c) 60%,transparent)}
+.med .nm{font-weight:600}
+.med .src{font-size:13px;color:var(--faint)}
+.medinfo{margin-top:10px;background:var(--sunk);border-radius:12px;padding:12px 14px;font-size:15px}
+.medinfo dt{font-size:13px;color:var(--faint);font-weight:600;margin-top:8px}
+.medinfo dt:first-child{margin-top:0}
+.medinfo dd{margin:2px 0 0}
+
+/* timeline */
+.tl{position:relative;font-size:13px}
+.tl-grid{position:relative}
+.tl-row{display:grid;grid-template-columns:var(--lab,150px) 1fr;align-items:center;min-height:40px}
+.tl-lab{padding-right:10px;line-height:1.25;overflow:hidden}
+.tl-lab b{font-weight:600;font-size:13.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tl-lab small{color:var(--faint);font-size:11.5px;white-space:nowrap}
+.tl-track{position:relative;height:32px}
+.tl-track::before{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px dotted var(--line)}
+.tl-vl{position:absolute;top:0;bottom:0;border-left:1px solid var(--line);pointer-events:none}
+.bar{position:absolute;right:0;top:9px;height:14px;border-radius:7px 3px 3px 7px;background:var(--c);opacity:.9}
+.bar.old{border-radius:0 3px 3px 0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 18px);mask-image:linear-gradient(90deg,transparent 0,#000 18px)}
+.bar.casc{outline:2.5px solid var(--hu);outline-offset:2px}
+.bar-note{position:absolute;top:7px;font-size:11px;color:var(--faint);white-space:nowrap}
+.sym-row .tl-track{height:46px}
+.smk{position:absolute;top:24px;width:13px;height:13px;transform:translateX(-50%) rotate(45deg);background:var(--hu);border-radius:2px}
+.smk.casc{box-shadow:0 0 0 3px var(--hu-soft),0 0 0 4.5px var(--hu)}
+.sm-l{position:absolute;top:2px;font-size:12px;font-weight:600;color:var(--hu-deep);white-space:nowrap}
+.tl-axis .tl-track::before{display:none}
+.tl-axis .tl-track{height:22px}
+.tl-tick{position:absolute;top:2px;font-size:11.5px;color:var(--faint);transform:translateX(-50%);white-space:nowrap}
+.tl-tick.end{transform:translateX(-100%)}
+.tl-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--soft);margin-top:10px}
+.tl-legend i{display:inline-block;width:14px;height:9px;border-radius:5px;margin-right:6px;vertical-align:0}
+.casc-note{margin-top:12px;border-radius:12px;background:var(--hu-soft);color:var(--hu-deep);padding:10px 14px;font-size:14.5px}
+.casc-note b{font-weight:700}
+.scroll-x{overflow-x:auto}
+.scroll-x>.tl{min-width:560px}
+.compact .tl-row{--lab:98px}
+.compact .scroll-x>.tl{min-width:0}
+.compact .tl-lab b{font-size:13px}
+.compact .bar-note{font-size:10.5px}
+
+/* questions */
+.q{padding:14px 0;border-top:1px solid var(--line)}
+.q:first-child{border-top:0;padding-top:2px}
+.q-h{display:flex;gap:10px;align-items:flex-start}
+.q-h p{flex:1;font-weight:600}
+.speak{border:1px solid var(--line);background:var(--card);border-radius:10px;min-width:40px;min-height:40px;display:grid;place-items:center;color:var(--rx-deep)}
+.why{margin-top:8px;background:var(--rx-soft);color:var(--rx-deep);border-radius:10px;padding:8px 12px;font-size:14px}
+.opts{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+
+/* chat */
+.chat{display:flex;flex-direction:column;gap:10px}
+.bub{max-width:86%;padding:11px 14px;border-radius:16px;line-height:1.55;white-space:pre-wrap}
+.bub.u{align-self:flex-end;background:var(--rx);color:var(--on-rx);border-bottom-right-radius:5px}
+.bub.a{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-bottom-left-radius:5px}
+.bub.p{align-self:flex-start;background:var(--hu-soft);border:1px solid color-mix(in srgb,var(--hu) 40%,transparent);border-bottom-left-radius:5px}
+.bub .who{display:block;font-size:12.5px;font-weight:700;color:var(--faint);margin-bottom:3px}
+.bub.p .who{color:var(--hu-deep)}
+.hand{align-self:stretch;border:1.5px solid var(--hu);background:var(--card);border-radius:16px;padding:13px 15px}
+.hand .hh{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--hu-deep)}
+.emerg{margin-top:8px;background:var(--danger-soft);color:var(--danger);border-radius:10px;padding:8px 12px;font-weight:600;font-size:15px}
+.composer{position:sticky;bottom:calc(76px + env(safe-area-inset-bottom,0px));margin-top:14px;background:var(--paper);padding:8px 0 4px}
+.composer .row{flex-wrap:nowrap}
+.sugg{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px}
+.sugg button{flex:none;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 13px;font-size:14px;color:var(--soft)}
+.typing{align-self:flex-start;color:var(--faint);font-size:14px;padding:4px 6px}
+
+/* bottom nav */
+.pnav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--card) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.pnav-in{max-width:540px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+.pnav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 0 10px;min-height:64px;font-size:12.5px;font-weight:600;color:var(--faint);position:relative}
+.pnav button svg{width:24px;height:24px}
+.pnav button[aria-current="page"]{color:var(--rx-deep)}
+.pnav .dot{position:absolute;top:8px;left:calc(50% + 8px);min-width:17px;height:17px;border-radius:9px;background:var(--hu);color:var(--on-hu);font-size:11px;line-height:17px;padding:0 4px}
+
+/* copilot */
+.cgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
+@media (max-width:980px){.cgrid{grid-template-columns:1fr}}
+.stages{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:14px;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.stage{padding:10px 12px;background:var(--sunk);font-size:13px;line-height:1.4}
+.stage+.stage{border-left:1px solid var(--line)}
+.stage b{display:block;font-size:14px}
+.stage .n{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--card);font-size:12px;font-weight:700;margin-right:6px}
+.stage.s4 .n{background:var(--hu)}
+@media (max-width:640px){.stages{grid-template-columns:1fr 1fr}.stage:nth-child(3){border-left:0}.stage:nth-child(n+3){border-top:1px solid var(--line)}}
+.stn{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--card);font-size:11.5px;font-weight:700}
+.stn.h{background:var(--hu)}
+.phead{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}
+.phead .big{font-size:22px;font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th,td{text-align:left;padding:10px 10px;border-top:1px solid var(--line);vertical-align:top}
+th{color:var(--faint);font-weight:600;font-size:12.5px;border-top:0;white-space:nowrap}
+tr.dis td{background:var(--hu-soft)}
+.merp{font-weight:700;font-size:13px;white-space:nowrap}
+.merp.D,.merp.E,.merp.F,.merp.G{color:var(--danger)} .merp.C{color:var(--hu-deep)} .merp.A,.merp.B{color:var(--rule)}
+.hq{border:1.5px solid var(--hu);border-radius:16px;padding:14px 16px;background:var(--card)}
+.hq+.hq{margin-top:10px}
+.hq.done{border-color:var(--line);opacity:.85}
+.hq blockquote{margin:8px 0;padding:8px 12px;border-left:3px solid var(--hu);background:var(--hu-soft);border-radius:0 10px 10px 0;font-size:15px}
+.brief{background:var(--rx-soft);border:1px solid color-mix(in srgb,var(--rx) 40%,transparent);border-radius:14px;padding:16px 18px;margin-top:14px}
+.brief ol{list-style:decimal;padding-left:22px;margin-top:6px} .brief li{margin-top:6px}
+.msg{background:var(--sunk);border-radius:12px;padding:12px 14px;margin-top:10px}
+.msg .from{font-size:12.5px;color:var(--faint);font-weight:600;margin-bottom:4px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:720px){.two{grid-template-columns:1fr}}
+.err{background:var(--danger-soft);color:var(--danger);border-radius:12px;padding:9px 13px;font-size:14px;margin-top:10px}
+.note{background:var(--rule-soft);color:var(--rule);border-radius:12px;padding:9px 13px;font-size:14px;margin-top:10px}
+.switch{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--line)}
+.switch:first-of-type{border-top:0}
+.switch span{flex:1}
+.tg{width:50px;height:30px;border-radius:15px;border:0;background:var(--line);position:relative;flex:none}
+.tg::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.tg[aria-pressed="true"]{background:var(--rx)}
+.tg[aria-pressed="true"]::after{left:23px}
+.term{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:9px 0;border-top:1px solid var(--line);font-size:14.5px}
+.term:first-child{border-top:0}
+.term em{font-style:normal;color:var(--rx-deep);font-size:13px;grid-column:1/-1}
+.log li{font-size:13.5px;color:var(--soft);padding:5px 0;border-top:1px solid var(--line)}
+.log li:first-child{border-top:0}
+.photo-prev{display:flex;gap:12px;align-items:flex-start;margin-top:10px}
+.photo-prev img{width:92px;height:92px;object-fit:cover;border-radius:12px;border:1px solid var(--line)}
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--card);padding:10px 18px;border-radius:12px;font-size:14.5px;z-index:50;max-width:90vw;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+.empty{color:var(--faint);font-size:14.5px;padding:6px 0}
+.greet{display:flex;align-items:flex-end;gap:12px}
+.greet .big{font-size:24px;font-weight:700;line-height:1.3}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <div class="brand">
+    <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><rect x="0" y="0" width="40" height="40" rx="12" fill="var(--rx)"/><g transform="rotate(-38 20 20)"><rect x="8" y="14" width="24" height="12" rx="6" fill="#fff"/><path d="M20 14h6a6 6 0 0 1 0 12h-6z" fill="var(--hu)"/></g></svg>
+    <div><b>복약안심이</b><small>환자 앱 + 의·약사 AI 코파일럿</small></div>
+  </div>
+  <div class="roles" role="group" aria-label="화면 선택">
+    <button type="button" data-role="p" aria-pressed="true">환자 앱</button>
+    <button type="button" class="c" data-role="c" aria-pressed="false">의·약사 코파일럿</button>
+  </div>
+</div></header>
+<div class="notice"><details><summary>시연용 데모 · 가상 환자(C01 기반) · 시연 순서 보기</summary>
+  <p style="margin-top:6px">실제 진료가 아니며, AI 출력은 참고용이고 최종 판단은 의료진이 합니다. C01 프로필을 바탕으로 메트포르민 복용 사유(당뇨)와 처방 폭포 시연용 약 2개(옥시부티닌·락툴로오스)를 보완했어요.</p>
+  <ol>
+    <li>환자 앱 홈에서 오늘 약 봉투와 위험 알림, 약 타임라인을 확인해요.</li>
+    <li>문진에서 “몸이 붓거나 소변이 줄었나요?”에 ‘조금’을 누른 뒤, 내 약에서 “푸로세미드”를 등록해요.</li>
+    <li>AI 상담에서 “요즘 잇몸에서 피가 나요”를 보내면 AI가 답하지 않고 약사에게 연결해요.</li>
+    <li>의·약사 코파일럿으로 전환해 이관 요청에 답하고, 브리핑·교차 검증·의견서를 확인해요.</li>
+  </ol></details></div>
+<main id="view"></main>
+<nav class="pnav" id="pnav" aria-label="환자 앱 메뉴"></nav>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="photoIn" accept="image/*" hidden>
+
+<script>
+(function(){
+'use strict';
+var KEY='bokyak-integrated-v2';
+var $=function(s,r){return (r||document).querySelector(s)};
+var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+function uid(){return Math.random().toString(36).slice(2,9)}
+function pad(n){return String(n).padStart(2,'0')}
+function nowT(){var d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes())}
+function todayK(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function agoLabel(n){return n===0?'오늘':n<30?n+'일 전':n<365?Math.round(n/30)+'개월 전':(n/365).toFixed(1)+'년 전'}
+function toast(t){var el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(function(){el.classList.remove('on')},2400)}
+
+/* ---------- 약 정보 DB (시연용 요약, 실제 서비스는 식약처·DUR 원문 대조) ---------- */
+var DB=[
+ {k:/스피로노락톤|알닥톤/,n:'스피로노락톤',cls:['diuretic','kspare'],use:'몸에 쌓인 물을 빼고 심장 부담을 줄이는 이뇨제예요. 칼륨은 몸에 남겨 둬요.',care:'칼륨이 너무 높아질 수 있어 피검사로 확인해요. 진통소염제와 함께 드시면 콩팥 부담이 커져요.',se:'어지러움, 소변 증가'},
+ {k:/푸로세미드|라식스|토르세미드/,n:'푸로세미드',cls:['diuretic','loop'],use:'몸의 물을 빠르게 빼는 이뇨제예요.',care:'탈수·어지러움이 생길 수 있어요. 붓기가 다른 약 때문에 생긴 건 아닌지 먼저 확인이 필요해요.',se:'소변 증가, 어지러움, 입마름'},
+ {k:/니페디핀|아달라트/,n:'니페디핀',cls:['ccb','nifedipine'],use:'혈관을 넓혀 혈압을 내리는 약이에요.',care:'빨리 작용하는 속방정은 혈압이 갑자기 떨어져 어지럽거나 넘어질 수 있어요.',se:'발목 붓기, 얼굴 화끈거림, 두통'},
+ {k:/암로디핀|노바스크/,n:'암로디핀',cls:['ccb','bp'],use:'혈관을 넓혀 혈압을 내리는 약이에요.',care:'일어날 때 천천히 일어나세요.',se:'발목 붓기, 두통'},
+ {k:/텔미사르탄|로사르탄|발사르탄|올메사르탄|리시노프릴|에날라프릴|라미프릴/,n:'혈압약(사르탄·ACE 억제제)',cls:['bp','raas'],use:'혈압을 내리고 심장·콩팥을 보호하는 약이에요.',care:'칼륨을 올릴 수 있어 칼륨보존 이뇨제와 함께면 피검사가 필요해요.',se:'어지러움, 마른기침(ACE 억제제)'},
+ {k:/비소프롤롤|카르베딜롤|아테놀롤|프로프라놀롤|메토프롤롤/,n:'베타차단제',cls:['bp','bb'],use:'맥박을 안정시키고 혈압을 내리는 약이에요.',care:'갑자기 끊으면 위험할 수 있어요.',se:'피로, 느린 맥박'},
+ {k:/메트포르민|글루코파지|다이아벡스/,n:'메트포르민',cls:['metformin'],use:'혈당을 낮추는 당뇨약이에요.',care:'콩팥 기능이 떨어지면 드물게 위험한 부작용(젖산산증)이 생길 수 있어 콩팥 수치를 확인해요.',se:'속 불편, 설사'},
+ {k:/도네페질|아리셉트|리바스티그민|갈란타민/,n:'도네페질',cls:['chei'],use:'기억력이 떨어지는 것(치매)을 늦추는 약이에요.',care:'감기약·방광약처럼 항콜린 성분이 든 약과 함께면 효과가 줄 수 있어요.',se:'소변 지림, 속 불편, 느린 맥박, 생생한 꿈'},
+ {k:/옥시부티닌|디트로판|톨테로딘|솔리페나신|베시케어/,n:'옥시부티닌',cls:['anticholinergic','oab'],use:'소변이 자주 마렵거나 새는 것을 줄이는 방광약이에요.',care:'항콜린 성분이라 치매약 효과를 떨어뜨리고, 어르신은 혼란·변비가 올 수 있어요.',se:'입마름, 변비, 졸림'},
+ {k:/나프록센|낙센|탁센/,n:'나프록센',cls:['nsaid'],use:'통증과 염증을 줄이는 진통소염제예요.',care:'콩팥·심장이 약하면 부담이 되고, 혈액을 묽게 하는 약과 함께면 출혈 위험이 커져요.',se:'속쓰림, 붓기, 혈압 상승'},
+ {k:/이부프로펜|부루펜|애드빌|덱시부프로펜|디클로페낙|세레콕시브|멜록시캄/,n:'이부프로펜 등 진통소염제',cls:['nsaid'],use:'통증과 열, 염증을 줄이는 진통소염제예요.',care:'콩팥·심장이 약하거나 다른 진통소염제와 겹치면 부담이 커져요.',se:'속쓰림, 붓기'},
+ {k:/아세트아미노펜|타이레놀|펜잘/,n:'아세트아미노펜',cls:['apap'],use:'열과 통증을 줄이는 해열진통제예요.',care:'정해진 양을 넘기면 간에 부담이 돼요. 감기약에도 들어 있을 수 있어 겹치지 않게 확인해요.',se:'정해진 양에서는 드물어요'},
+ {k:/디펜히드라민|종합감기약|감기약|판콜|콜대원|판피린/,n:'종합감기약(디펜히드라민)',cls:['anticholinergic','ah1','cold'],use:'콧물·기침을 줄이는 감기약이에요. 졸리게 하는 성분이 들어 있어요.',care:'어르신은 졸림·혼란·넘어짐이 생길 수 있고 치매약과 반대로 작용해요.',se:'졸림, 입마름, 변비, 소변 보기 어려움'},
+ {k:/클로르페니라민|페니라민/,n:'클로르페니라민',cls:['anticholinergic','ah1'],use:'콧물·가려움을 줄이는 1세대 알레르기약이에요.',care:'어르신은 졸림·혼란·변비가 생기기 쉬워요.',se:'졸림, 입마름'},
+ {k:/세티리진|지르텍|레보세티리진|펙소페나딘|로라타딘/,n:'세티리진',cls:['ah2'],use:'졸림이 적은 알레르기약이에요.',care:'콩팥 기능이 떨어지면 양 조절이 필요할 수 있어요.',se:'약한 졸림'},
+ {k:/락툴로오스|듀파락|비사코딜|둘코락스|변비약|마그밀|산화마그네슘/,n:'변비약',cls:['laxative'],use:'변을 부드럽게 해 주는 변비약이에요.',care:'변비가 다른 약 때문에 생긴 건 아닌지 함께 확인해 보세요.',se:'배에 가스, 더부룩함'},
+ {k:/와파린|쿠마딘|아픽사반|리바록사반|엘리퀴스|자렐토|에독사반/,n:'항응고제(와파린 등)',cls:['anticoag'],use:'피가 굳는 것을 막아 뇌졸중을 예방하는 약이에요.',care:'진통소염제·은행잎·오메가3 등과 함께면 출혈 위험이 커져요.',se:'멍, 잇몸 출혈'},
+ {k:/아스피린|클로피도그렐|플라빅스/,n:'항혈소판제(아스피린 등)',cls:['antiplatelet'],use:'피가 뭉치는 것을 막는 약이에요.',care:'진통소염제와 함께면 위 출혈 위험이 커져요.',se:'속쓰림, 멍'},
+ {k:/졸피뎀|스틸녹스|트리아졸람|로라제팜|알프라졸람|디아제팜/,n:'수면제·진정제',cls:['sedative'],use:'잠드는 것을 돕거나 불안을 줄이는 약이에요.',care:'어르신은 다음 날 졸림·넘어짐 위험이 있어 꼭 필요한지 확인해요.',se:'다음 날 졸림, 비틀거림'},
+ {k:/로수바스타틴|아토르바스타틴|심바스타틴|피타바스타틴/,n:'스타틴',cls:['statin'],use:'콜레스테롤을 낮추는 약이에요.',care:'근육이 아프면 알려 주세요.',se:'근육통'},
+ {k:/오메가3|오메가-3|오메가 3/,n:'오메가3',cls:['omega3','bleedsupp'],use:'혈중 지방 관리에 쓰는 영양제예요.',care:'많이 드시면 피가 잘 멈추지 않을 수 있어 진통소염제·혈액 묽게 하는 약과 함께면 주의해요.',se:'비린 트림, 속 불편'},
+ {k:/홍삼|인삼/,n:'홍삼',cls:['ginseng','bleedsupp'],use:'기력 보충용으로 많이 드시는 건강기능식품이에요.',care:'혈압·혈당·혈액 응고에 영향을 줄 수 있어 복용 사실을 약사에게 알려 주세요.',se:'불면, 두근거림'},
+ {k:/은행잎|징코|기넥신/,n:'은행잎 추출물',cls:['ginkgo','bleedsupp'],use:'혈액순환 개선용으로 드시는 추출물이에요.',care:'혈액을 묽게 하는 약과 함께면 출혈 위험이 커질 수 있어요.',se:'속 불편, 두통'},
+ {k:/비타민\s?D|비타민디/,n:'비타민D',cls:['vitd'],use:'뼈 건강을 돕는 영양제예요.',care:'정해진 양을 지키면 대체로 안전해요.',se:'드물어요'},
+ {k:/칼슘/,n:'칼슘',cls:['calcium'],use:'뼈 건강을 돕는 영양제예요.',care:'일부 약(골다공증약, 일부 항생제)의 흡수를 방해해 시간 간격이 필요해요.',se:'변비'},
+ {k:/글루코사민/,n:'글루코사민',cls:['glucosamine'],use:'관절 건강용 영양제예요.',care:'대체로 안전하지만 혈당약·혈액 묽게 하는 약과 함께면 알려 주세요.',se:'속 불편'},
+ {k:/종합비타민|멀티비타민/,n:'종합비타민',cls:['multivit'],use:'여러 비타민을 한 번에 보충하는 영양제예요.',care:'비타민K가 들어 있으면 와파린 효과에 영향을 줄 수 있어요.',se:'드물어요'}
+];
+var SUGGEST=['스피로노락톤','푸로세미드','니페디핀 속방정','암로디핀','텔미사르탄','메트포르민','도네페질','옥시부티닌','나프록센','이부프로펜','타이레놀(아세트아미노펜)','종합감기약','클로르페니라민','세티리진','락툴로오스','와파린','아스피린','클로피도그렐','졸피뎀','로수바스타틴','오메가3','홍삼','은행잎 추출물','비타민D','칼슘','글루코사민','종합비타민'];
+function infoOf(name){for(var i=0;i<DB.length;i++){if(DB[i].k.test(name))return DB[i]}return null}
+function clsOf(name){var c=[];DB.forEach(function(d){if(d.k.test(name))c=c.concat(d.cls)});return c}
+var TYPE={rx:{l:'처방약',c:'var(--rx)',t:'t-rx'},otc:{l:'일반약',c:'var(--otc)',t:'t-otc'},supp:{l:'영양제',c:'var(--sup)',t:'t-sup'}};
+var SLOTS=[['아침','아침 식후 30분'],['점심','점심 식후 30분'],['저녁','저녁 식후 30분'],['자기 전','잠들기 30분 전']];
+var CONDS=['고혈압','당뇨','심부전','만성 신질환','치매·인지저하','관절염','심방세동','만성 폐질환(COPD)','암 치료 중'];
+
+/* ---------- 가상 환자 (C01 기반 재구성) ---------- */
+function blank(){return {
+  role:'p',ptab:'home',
+  profile:{name:'가상 환자 A',age:84,sex:'여',height:155,weight:42,conds:['심부전','만성 신질환','당뇨','치매·인지저하','관절염'],hx:'12년 전 낙상으로 발목 골절·수술. 혈압약 복용 중 기립성 저혈압으로 실신한 적 있음.',life:'음주 안 함 · 비흡연 · 커피 하루 1잔',adverse:'알려진 약물 알레르기 없음'},
+  meds:[
+   {id:'m1',name:'스피로노락톤 25mg',type:'rx',src:'병원 A 내과',ago:700,when:['아침']},
+   {id:'m2',name:'니페디핀 속방정 10mg',type:'rx',src:'병원 A 내과',ago:700,when:['아침','저녁']},
+   {id:'m3',name:'메트포르민 500mg',type:'rx',src:'병원 A 내과',ago:900,when:['아침','저녁']},
+   {id:'m4',name:'도네페질 5mg',type:'rx',src:'병원 B 신경과',ago:150,when:['자기 전']},
+   {id:'m5',name:'옥시부티닌 5mg',type:'rx',src:'병원 C 비뇨의학과',ago:95,when:['아침']},
+   {id:'m6',name:'나프록센 250mg',type:'otc',src:'약국 구입',ago:60,when:['아침','저녁']},
+   {id:'m7',name:'고용량 오메가3',type:'supp',src:'직접 구입',ago:40,when:['아침']},
+   {id:'m8',name:'홍삼',type:'supp',src:'직접 구입',ago:40,when:['아침']},
+   {id:'m9',name:'종합감기약(디펜히드라민 함유)',type:'otc',src:'약국 구입',ago:20,when:['자기 전']},
+   {id:'m10',name:'락툴로오스 시럽',type:'otc',src:'약국 구입',ago:8,when:['아침']}
+  ],
+  syms:[
+   {id:'s1',label:'소변 지림',tags:['urinary'],ago:110,from:'이전 기록'},
+   {id:'s2',label:'변비·입마름',tags:['constipation','dry_mouth'],ago:15,from:'이전 기록'}
+  ],
+  answers:{},aiQs:[],checks:{},
+  consent:{med:true,sym:true,health:true,life:false},
+  log:[],handoffs:[],chat:[],inbox:[],review:{},flags:{},drafts:{},
+  opinion:'나프록센을 중단하고 아세트아미노펜으로 대체하는 방안을 검토해 주세요. 종합감기약은 항콜린 성분이 있어 대체 제품이 필요해 보입니다.',
+  openMed:null,showAll:false,addType:'rx',addWhen:['아침']
+}}
+var S=(function(){try{var r=localStorage.getItem(KEY);if(r){var o=JSON.parse(r);var b=blank();Object.keys(b).forEach(function(k){if(o[k]===undefined)o[k]=b[k]});return o}}catch(e){}return blank()})();
+var R={brief:null,cross:null,op:null,opApproved:false,opSent:false,busy:{},err:{},chatBusy:false,photo:null,cand:null,medAI:{},fallback:{}};
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+/* ---------- context (환자: 전체 · 코파일럿: 공유 동의 범위) ---------- */
+function withCls(m){return Object.assign({},m,{cls:clsOf(m.name),short:m.name.split('(')[0].trim()})}
+function ctx(view){
+  var full=view==='p',c=S.consent,P=S.profile;
+  var conds=(full||c.health)?P.conds:[],hx=(full||c.health)?P.hx:'';
+  var meds=(full||c.med)?S.meds.map(withCls):[];
+  var syms=(full||c.sym)?S.syms:[];
+  var F={hf:conds.indexOf('심부전')>-1,ckd:conds.indexOf('만성 신질환')>-1,dementia:conds.indexOf('치매·인지저하')>-1,falls:/낙상|넘어|실신/.test(hx)};
+  return {meds:meds,syms:syms,conds:conds,hx:hx,age:P.age,flags:F,life:(full||c.life)?P.life:null};
+}
+
+/* ---------- 규칙 DB: 위험 조합 (결정론적) ---------- */
+var MERP={A:'A·0 오류 가능 상황',B:'B·1 도달했으나 해 없음',C:'C·2 모니터링 필요',D:'D·3 일시적 해·중재 필요',E:'E·4 영구적 해',F:'F·5 생명 유지 중재',G:'G·6 사망'};
+function interactions(x){
+  var M=x.meds,F=x.flags,out=[];
+  var by=function(c){return M.filter(function(m){return m.cls.indexOf(c)>-1})};
+  var nm=function(c){return by(c).map(function(m){return m.short})};
+  var has=function(c){return by(c).length>0};
+  var old=x.age>=65;
+  if(has('kspare')&&has('nsaid'))out.push({id:'i1',sev:'high',merp:'D',area:'상호작용',title:'칼륨보존 이뇨제 + 진통소염제',items:nm('kspare').concat(nm('nsaid')),basis:'DUR 병용주의 · DrugBank',pro:'NSAID의 프로스타글란딘 억제로 신혈류가 줄어 급성 신손상·고칼륨혈증 위험.'+(F.ckd||F.hf?' 만성 신질환·심부전 동반으로 가중.':''),easy:'이뇨제와 진통소염제를 함께 드시면 콩팥에 부담이 되고, 몸의 칼륨이 너무 높아질 수 있어요.'});
+  if(has('anticoag')&&(has('nsaid')||has('bleedsupp')))out.push({id:'i2',sev:'high',merp:'D',area:'상호작용',title:'항응고제 + 출혈 위험 약·영양제',items:nm('anticoag').concat(nm('nsaid'),nm('bleedsupp')),basis:'DUR 병용주의 · DrugBank',pro:'항응고 효과에 NSAID·출혈 경향 보충제가 더해져 위장관·두개내 출혈 위험 증가.',easy:'피를 묽게 하는 약과 진통소염제·일부 영양제를 함께 드시면 피가 잘 멈추지 않을 수 있어요.'});
+  if(has('nsaid')&&(F.hf||F.ckd))out.push({id:'i3',sev:'high',merp:'D',area:'기저질환',title:'진통소염제 + '+(F.hf&&F.ckd?'심부전·만성 신질환':F.hf?'심부전':'만성 신질환'),items:nm('nsaid'),basis:'Beers 2023 · 식약처 허가사항',pro:'NSAID는 심부전의 체액 저류를 악화시키고 신기능 저하를 가속할 수 있음. Beers 기준상 심부전·CrCl<30에서 회피 권고.',easy:'심장·콩팥이 약하신 분이 진통소염제를 드시면 몸이 붓거나 콩팥 기능이 더 떨어질 수 있어요.'});
+  if(has('chei')&&has('anticholinergic'))out.push({id:'i4',sev:'mid',merp:'C',area:'상호작용',title:'치매약 + 항콜린 성분',items:nm('chei').concat(nm('anticholinergic')),basis:'Beers 2023 (약물-약물 상호작용)',pro:'콜린에스테라제 억제제와 항콜린제의 약리 길항으로 치료 효과 감소, 인지 저하·섬망 위험.',easy:'감기약·방광약 속 성분이 치매약 효과를 떨어뜨리고 졸림·넘어짐을 늘릴 수 있어요.'});
+  if(by('anticholinergic').length>=2)out.push({id:'i5',sev:'mid',merp:'C',area:'중복',title:'항콜린 성분이 여러 약에 겹침',items:nm('anticholinergic'),basis:'Beers 2023 (항콜린 부담)',pro:'항콜린 부담 누적으로 인지 저하·변비·요저류·낙상 위험 증가.',easy:'입을 마르게 하고 변비를 만드는 성분이 여러 약에 겹쳐 있어요.'});
+  if(has('nifedipine')&&old&&M.some(function(m){return m.cls.indexOf('nifedipine')>-1&&/속방/.test(m.name)}))out.push({id:'i6',sev:'mid',merp:'D',area:'노인주의약물',title:'속방형 니페디핀'+(F.falls?' + 낙상·실신 이력':''),items:['니페디핀 속방정'],basis:'Beers 2023',pro:'속방형 니페디핀은 급격한 혈압 저하·반사성 빈맥 위험으로 고령자에서 회피 권고.'+(F.falls?' 기립성 저혈압 실신 이력 동반.':''),easy:'빨리 작용하는 혈압약은 혈압이 갑자기 떨어져 어지럽거나 넘어질 수 있어요.'});
+  if(has('metformin')&&F.ckd)out.push({id:'i7',sev:'mid',merp:'C',area:'기저질환',title:'메트포르민 + 만성 신질환',items:nm('metformin'),basis:'식약처 허가사항 (eGFR 기준)',pro:'eGFR 30 미만 금기, 30~45 신중 투여. 심부전 동반 시 조직 저산소에 따른 젖산산증 위험도 함께 고려.',easy:'콩팥 기능에 따라 당뇨약 양을 조절해야 할 수 있어 피검사 확인이 필요해요.'});
+  if(has('ah1')&&old&&!has('chei')&&by('anticholinergic').length<2)out.push({id:'i8',sev:'mid',merp:'C',area:'노인주의약물',title:'1세대 항히스타민제',items:nm('ah1'),basis:'Beers 2023',pro:'고령자에서 강한 항콜린·진정 작용으로 회피 권고.',easy:'졸리게 하는 감기약·알레르기약은 어르신에게 혼란과 넘어짐을 일으킬 수 있어요.'});
+  if(has('sedative')&&old)out.push({id:'i9',sev:'mid',merp:'C',area:'노인주의약물',title:'수면제·진정제 (고령)',items:nm('sedative'),basis:'Beers 2023',pro:'Z-drug·벤조디아제핀은 고령자 낙상·골절·인지 저하 위험.',easy:'수면제는 다음 날 졸림과 넘어짐을 일으킬 수 있어요.'});
+  if(by('nsaid').length>=2)out.push({id:'i10',sev:'mid',merp:'C',area:'중복',title:'진통소염제 중복',items:nm('nsaid'),basis:'DUR 효능군 중복',pro:'동일 효능군 NSAID 중복 투여로 위장관·신장 이상반응 증가.',easy:'같은 종류의 진통소염제를 두 가지 드시고 있어요.'});
+  if(has('antiplatelet')&&has('nsaid'))out.push({id:'i11',sev:'mid',merp:'C',area:'상호작용',title:'항혈소판제 + 진통소염제',items:nm('antiplatelet').concat(nm('nsaid')),basis:'DUR 병용주의',pro:'위장관 출혈 위험 증가.',easy:'피가 뭉치지 않게 하는 약과 진통소염제를 함께 드시면 위 출혈 위험이 커져요.'});
+  if(by('apap').length>=2||(has('apap')&&M.some(function(m){return m.cls.indexOf('cold')>-1})))out.push({id:'i12',sev:'low',merp:'B',area:'중복',title:'아세트아미노펜 중복 가능성',items:nm('apap').concat(nm('cold')),basis:'식약처 허가사항',pro:'종합감기약 내 아세트아미노펜 함유 여부 확인 필요 (1일 최대량 초과 방지).',easy:'감기약에도 타이레놀 성분이 들어 있을 수 있어 하루 양이 넘지 않게 확인해요.'});
+  if(has('nsaid')&&(has('omega3')||has('ginseng'))&&!has('anticoag'))out.push({id:'i13',sev:'low',merp:'B',area:'상호작용',title:'고용량 오메가3·홍삼 + 진통소염제',items:nm('omega3').concat(nm('ginseng'),nm('nsaid')),basis:'DrugBank (근거 수준 낮음)',pro:'출혈 경향을 더할 수 있으나 임상적 의미는 제한적. 모니터링 수준.',easy:'함께 드시면 멍이 조금 더 잘 들 수 있어 참고로 알려 드려요.'});
+  var o={high:0,mid:1,low:2};out.sort(function(a,b){return o[a.sev]-o[b.sev]});return out;
+}
+var CASC=[
+ {id:'c1',title:'치매약 → 소변 지림 → 방광약',cause:'chei',sym:['urinary'],treat:'oab',c2s:365,s2t:90,why:'콜린에스테라제 억제제(도네페질 등)는 소변 지림을 일으킬 수 있어요. 이를 새 질환으로 보고 항콜린 방광약을 더하면 치매약과 정반대로 작용해요.',check:'소변 증상이 치매약 시작 후에 생겼는지, 방광약이 꼭 필요한지 처방의와 확인'},
+ {id:'c2',title:'항콜린 성분 → 변비·입마름 → 변비약',cause:'anticholinergic',sym:['constipation','dry_mouth'],treat:'laxative',c2s:120,s2t:60,why:'항콜린 성분의 흔한 부작용(변비·입마름)을 새 증상으로 보고 변비약을 더하는 연쇄일 수 있어요.',check:'변비·입마름이 항콜린 성분(감기약·방광약) 시작 후에 생겼는지 확인'},
+ {id:'c3',title:'진통소염제 → 혈압 상승 → 혈압약',cause:'nsaid',sym:['bp_up'],treat:'bp',c2s:180,s2t:60,why:'진통소염제는 혈압을 올릴 수 있어요. 이를 새 고혈압으로 보고 혈압약을 더하는 연쇄일 수 있어요.',check:'혈압 상승 시점과 진통소염제 복용 시점을 비교'},
+ {id:'c4',title:'칼슘채널차단제 → 발목 붓기 → 이뇨제',cause:'ccb',sym:['edema'],treat:'loop',c2s:3650,s2t:60,why:'니페디핀·암로디핀은 발목 붓기를 일으킬 수 있어요. 이를 부종 질환으로 보고 이뇨제를 더하는 연쇄일 수 있어요.',check:'붓기가 혈압약 복용 후에 생겼는지, 심부전 악화와 구분되는지 확인'}
+];
+function cascades(x){
+  var M=x.meds,out=[];
+  CASC.forEach(function(r){
+    x.syms.forEach(function(s){
+      if(!s.tags.some(function(t){return r.sym.indexOf(t)>-1}))return;
+      var treats=M.filter(function(m){return m.cls.indexOf(r.treat)>-1&&s.ago-m.ago>=0&&s.ago-m.ago<=r.s2t});
+      if(!treats.length)return;
+      var causes=M.filter(function(m){return m.cls.indexOf(r.cause)>-1&&m.ago-s.ago>=0&&m.ago-s.ago<=r.c2s&&treats.every(function(t){return t.id!==m.id})});
+      if(!causes.length)return;
+      if(out.some(function(o){return o.rule.id===r.id}))return;
+      out.push({rule:r,sym:s,causes:causes,treats:treats});
+    });
+  });
+  return out;
+}
+
+/* ---------- 문진 ---------- */
+var BASIC=[
+ {id:'q1',q:'앉았다 일어날 때 어지럽거나 휘청거린 적이 있나요?',tag:'dizzy',sym:'어지러움·휘청거림',opts:['없어요','가끔 있어요','자주 있어요']},
+ {id:'q2',q:'최근 넘어지거나 넘어질 뻔한 적이 있나요?',tag:'fall',sym:'넘어짐',opts:['없어요','넘어질 뻔했어요','넘어졌어요']},
+ {id:'q3',q:'입이 많이 마르거나 변비가 생겼나요?',tag:'constipation',tags:['constipation','dry_mouth'],sym:'변비·입마름',opts:['아니요','조금 있어요','심해요']},
+ {id:'q4',q:'평소보다 졸리거나 정신이 흐릿한가요?',tag:'sleepy',sym:'졸림·멍함',opts:['아니요','가끔','심해요']},
+ {id:'q5',q:'숨이 차거나 가슴이 답답한가요?',tag:'dyspnea',sym:'숨참·가슴 답답',opts:['아니요','가끔','지금 있어요'],hand:2,emerg:true},
+ {id:'q6',q:'몸이 붓거나 소변이 줄었나요?',tag:'edema',sym:'붓기·소변 감소',opts:['아니요','조금','심해요']},
+ {id:'q7',q:'멍이 잘 들거나 잇몸·코에서 피가 나나요?',tag:'bleed',sym:'멍·출혈',opts:['아니요','조금','자주 있어요'],hand:2}
+];
+function adaptiveQs(x){
+  var has=function(c){return x.meds.some(function(m){return m.cls.indexOf(c)>-1})},out=[];
+  if(has('chei'))out.push({id:'a1',q:'치매약을 드신 뒤로 소변이 새거나 자주 마려운가요?',tag:'urinary',sym:'소변 지림',opts:['아니요','가끔','자주'],why:'도네페질 같은 치매약은 소변 증상을 만들 수 있어요. 이 증상에 방광약이 더해지면 치매약과 반대로 작용할 수 있어 확인해요.'});
+  if(has('nsaid'))out.push({id:'a2',q:'속이 쓰리거나 변 색깔이 검게 나온 적이 있나요?',tag:'gi',sym:'속쓰림·검은 변',opts:['아니요','속쓰림만','검은 변이 나왔어요'],hand:2,why:'진통소염제(나프록센 등)는 위를 헐게 해 출혈을 일으킬 수 있어요. 검은 변은 위 출혈의 신호일 수 있어요.'});
+  if(has('cold'))out.push({id:'a3',q:'잠이 안 와서 감기약을 드시나요?',tag:'self_otc',sym:'수면 목적 감기약 복용',opts:['아니요','가끔','거의 매일'],why:'감기약의 졸리게 하는 성분을 수면제처럼 쓰면 어르신은 혼란·넘어짐 위험이 커져요.'});
+  if(has('kspare')||has('loop')||has('raas'))out.push({id:'a4',q:'다리에 힘이 빠지거나 맥박이 불규칙하게 느껴지나요?',tag:'k_high',sym:'근력 저하·맥박 이상',opts:['아니요','가끔','자주'],hand:2,why:'이뇨제·혈압약은 몸의 칼륨 수치를 바꿀 수 있어요. 칼륨이 너무 높거나 낮으면 근육과 심장에 증상이 나타나요.'});
+  return out;
+}
+var TERM={dizzy:'dizziness / 기립성 저혈압 여부 확인',fall:'fall / near-fall',constipation:'constipation',dry_mouth:'xerostomia',sleepy:'sedation / confusion',dyspnea:'dyspnea / chest discomfort',edema:'edema / oliguria',bleed:'bruising · gingival bleeding · epistaxis',urinary:'urinary incontinence',gi:'dyspepsia / melena 의심',self_otc:'self-medication (sleep aid)',k_high:'muscle weakness / palpitation (전해질 확인)',ai:'AI 생성 문항 응답'};
+function answer(q,i){
+  S.answers[q.id]=i;
+  S.syms=S.syms.filter(function(s){return s.id!=='q_'+q.id});
+  if(i>0){S.syms.push({id:'q_'+q.id,label:q.sym+(i===2?' (심함)':''),tags:q.tags||[q.tag],ago:0,from:'오늘 문진',sev:i})}
+  if(q.hand&&i>=q.hand&&!S.handoffs.some(function(h){return h.qid===q.id&&h.status==='대기'})){
+    addHandoff({source:'문진',qid:q.id,text:q.q+' → “'+q.opts[i]+'”',reason:'문진 위험 응답: '+q.sym,emerg:!!q.emerg});
+    toast('위험 신호라 약사에게 바로 연결했어요');
+  }
+  save();render();
+}
+
+/* ---------- 이관(핸드오프) ---------- */
+function addHandoff(h){h.id=uid();h.t=nowT();h.status='대기';S.handoffs.unshift(h);save();return h}
+
+/* ---------- AI (sample capability) ---------- */
+var sample=null,imgOK=false;
+if(window.claude&&window.claude.use){
+  window.claude.use('sample').then(function(f){
+    sample=f||null;
+    if(sample&&sample.limits){sample.limits().then(function(l){imgOK=!!(l&&l.images);render()}).catch(function(){})}
+    render();
+  }).catch(function(){});
+}
+function errCopy(e){var c=e&&e.code;if(c==='not_granted')return 'AI 호출을 허용하지 않아 시연용 예시를 보여 드려요.';if(c==='rate_limited')return '요청이 많아 잠시 후 다시 시도해 주세요. 시연용 예시를 보여 드려요.';if(c==='cancelled')return '중단했어요.';return 'AI 응답을 받지 못해 시연용 예시를 보여 드려요.'}
+function dataPack(x){
+  return JSON.stringify({환자:{나이:x.age,성별:S.profile.sex,키:S.profile.height,체중:S.profile.weight,질환:x.conds,병력:x.hx||'공유 안 됨',생활습관:x.life||'공유 안 됨'},
+    복용약:x.meds.map(function(m){return {이름:m.name,구분:TYPE[m.type].l,출처:m.src,시작:agoLabel(m.ago)}}),
+    증상기록:x.syms.map(function(s){return {증상:s.label,시점:agoLabel(s.ago),출처:s.from||''}}),
+    규칙DB_위험조합:interactions(x).map(function(i){return {제목:i.title,약:i.items,등급:i.sev,근거:i.basis}}),
+    규칙DB_처방폭포:cascades(x).map(function(c){return {제목:c.rule.title,원인후보:c.causes.map(function(m){return m.name}),증상:c.sym.label,추가된약:c.treats.map(function(m){return m.name})}})});
+}
+var SAFE='규칙: 아래 데이터에 있는 정보만 사용하고, 없는 수치·진단·병력은 지어내지 마세요. 확실하지 않으면 "확인 필요"라고 쓰세요. 진단이나 처방 변경·복용 중단을 지시하지 말고 전문가가 확인할 사항으로 제안하세요. 한국어로 답하세요.';
+function callAI(key,prompt,tier,onOk,onFb){
+  R.busy[key]=true;R.err[key]='';R.fallback[key]=false;render();
+  if(!sample){R.busy[key]=false;R.fallback[key]=true;R.err[key]='이 화면에서는 AI 호출을 쓸 수 없어 시연용 예시를 보여 드려요.';onFb();render();return}
+  sample.json(prompt,{modelTier:tier}).then(function(d){R.busy[key]=false;onOk(d);render()}).catch(function(e){R.busy[key]=false;R.fallback[key]=true;R.err[key]=errCopy(e);onFb();render()});
+}
+
+/* 브리핑 */
+function runBrief(){
+  var x=ctx('c');
+  var prompt='당신은 의·약사를 돕는 다제약물 코파일럿입니다. 방문 전에 읽을 1장짜리 브리핑을 만드세요.\n'+SAFE+'\n\n[데이터]\n'+dataPack(x)+'\n\n[출력] JSON만: {"summary":"한 문장 요약","priorities":[{"title":"제목","why":"근거 1~2문장","check":"전문가가 확인할 것"}] (최대 4개, 위험 순),"changes":["최근 증상·복용 변화 (최대 3개)"],"questions":["환자·보호자에게 물어볼 질문 (3~4개)"]}';
+  callAI('brief',prompt,'default',function(d){R.brief=d},function(){R.brief=fbBrief(x)});
+}
+function fbBrief(x){
+  var I=interactions(x),C=cascades(x),pr=[];
+  I.slice(0,2).forEach(function(i){pr.push({title:i.title,why:i.pro,check:'복용 필요성과 대안을 처방의·약사와 확인'})});
+  C.slice(0,2).forEach(function(c){pr.push({title:'처방 폭포 의심: '+c.rule.title,why:c.rule.why,check:c.rule.check})});
+  return {summary:x.age+'세 '+S.profile.sex+'성, 약 '+x.meds.length+'개를 병원 3곳·약국·영양제로 복용 중이며 심부전·만성 신질환·치매가 있어 상호작용과 처방 연쇄 점검이 우선이에요.',priorities:pr.slice(0,4),changes:x.syms.slice().sort(function(a,b){return a.ago-b.ago}).slice(0,3).map(function(s){return s.label+' ('+agoLabel(s.ago)+')'}),questions:['진통소염제(나프록센)를 얼마나 자주 드시나요?','감기약을 잠자기 전에 드시는 이유는 무엇인가요?','소변 지림은 언제부터, 어떤 약을 시작한 뒤에 생겼나요?','최근 어지러움이나 넘어질 뻔한 적이 있나요?']};
+}
+/* 교차 검증 */
+function runCross(){
+  var x=ctx('c');
+  R.busy.cross=true;R.err.cross='';R.fallback.cross=false;R.cross=null;render();
+  if(!sample){R.busy.cross=false;R.fallback.cross=true;R.err.cross='이 화면에서는 AI 호출을 쓸 수 없어 시연용 예시를 보여 드려요.';R.cross=fbCross();render();return}
+  var p1='당신은 1차 스크리닝 AI입니다. 상호작용, 효능군 중복, 노인주의약물, 기저질환 관련 위험을 4개 영역에서 점검해 가장 중요한 위험 5개 이내를 찾으세요.\n'+SAFE+'\n\n[데이터]\n'+dataPack(x)+'\n\n[출력] JSON만: {"findings":[{"id":"f1","area":"상호작용|중복|노인주의약물|기저질환","title":"제목","severity":"높음|주의|참고","rationale":"근거 1~2문장"}]}';
+  sample.json(p1,{modelTier:'quick'}).then(function(a){
+    var f=(a&&a.findings)||[];
+    var p2='당신은 1차 결과를 독립적으로 검증하는 2차 AI입니다. 1차 AI의 각 항목을 다음 5가지로 검증하세요: ①실제로 근거가 존재하는 상호작용인가 ②환자의 연령·기저질환에 해당하는 위험인가 ③제시되지 않은 환자 정보를 임의로 추론하지 않았는가 ④노인주의약물 기준과 일반 약물상호작용을 혼동하지 않았는가 ⑤잠재적 위해와 실제 발생한 위해를 구분했는가. 무조건 동의하지도, 무조건 반박하지도 말고 근거로 판단하세요.\n'+SAFE+'\n\n[환자 데이터]\n'+dataPack(x)+'\n\n[1차 AI 결과]\n'+JSON.stringify(f)+'\n\n[출력] JSON만: {"verdicts":[{"id":"1차 항목 id","verdict":"동의|이견|근거 부족","reason":"1~2문장","failed":[실패한 검증 번호 1~5]}],"missed":[{"title":"1차가 놓친 중요한 위험","reason":"근거"}] (최대 2개)}';
+    return sample.json(p2,{modelTier:'quick'}).then(function(b){R.busy.cross=false;R.cross={findings:f,verdicts:(b&&b.verdicts)||[],missed:(b&&b.missed)||[]};render()});
+  }).catch(function(e){R.busy.cross=false;R.fallback.cross=true;R.err.cross=errCopy(e);R.cross=fbCross();render()});
+}
+function fbCross(){
+  return {findings:[{id:'f1',area:'상호작용',title:'스피로노락톤 + 나프록센: 신손상·고칼륨혈증',severity:'높음',rationale:'칼륨보존 이뇨제와 NSAID 병용, 만성 신질환 동반'},{id:'f2',area:'상호작용',title:'도네페질 + 항콜린 성분: 약리 길항',severity:'주의',rationale:'옥시부티닌·디펜히드라민이 치매약 효과를 떨어뜨림'},{id:'f3',area:'기저질환',title:'메트포르민: 신기능 저하 환자의 젖산산증 위험',severity:'주의',rationale:'만성 신질환 동반'}],
+    verdicts:[{id:'f1',verdict:'동의',reason:'근거가 명확하고 환자 질환에 해당해요.',failed:[]},{id:'f2',verdict:'동의',reason:'항콜린 성분과 콜린에스테라제 억제제의 길항은 잘 알려져 있어요.',failed:[]},{id:'f3',verdict:'근거 부족',reason:'eGFR 수치가 제공되지 않아 위험 수준을 판단하기 어려워요. 수치 확인이 필요해요.',failed:[3]}],
+    missed:[{title:'처방 폭포 가능성(도네페질 → 소변 지림 → 옥시부티닌)',reason:'시간 순서상 약이 증상을 만들고 그 증상에 다시 약이 더해졌을 수 있어요.'}]};
+}
+/* 약사 의견 → 초안 */
+function runOp(){
+  var x=ctx('c');
+  var prompt='당신은 의·약사를 돕는 코파일럿입니다. 약사가 입력한 의견에 맞춰 (1) 관련 맥락, (2) 의사에게 전할 처방 이유 요약, (3) 의견서 초안, (4) 환자에게 보낼 쉬운 말 안내문을 만드세요.\n'+SAFE+'\n안내문은 초등학생도 이해할 쉬운 말로 3~4문장, 의사 확인을 거친 내용임을 밝히고, 지금 드시는 약을 스스로 바꾸거나 끊지 말고 안내를 따르라고 쓰세요.\n\n[약사 의견]\n'+S.opinion+'\n\n[데이터]\n'+dataPack(x)+'\n\n[출력] JSON만: {"context":[{"label":"동반질환|신기능|최근 증상|복용약 등","text":"의견과 관련된 환자 맥락 (데이터에 있는 것만)"}] (3~4개),"doctor_summary":"의사에게 전할 요약 3~4문장","draft_opinion":"의견서 초안 (근거·확인 사항 포함, 5~7문장)","patient_message":"환자용 안내문"}';
+  callAI('op',prompt,'default',function(d){R.op=d;R.opApproved=false;R.opSent=false},function(){R.op=fbOp();R.opApproved=false;R.opSent=false});
+}
+function fbOp(){
+  return {context:[{label:'동반질환',text:'심부전, 만성 신질환, 당뇨, 치매·인지저하, 관절염'},{label:'복용약',text:'스피로노락톤(칼륨보존 이뇨제)과 나프록센 병용 중'},{label:'최근 증상',text:'변비·입마름(15일 전), 소변 지림(약 4개월 전)'},{label:'확인 필요',text:'신기능 수치(eGFR)와 칼륨 수치가 제공되지 않았어요'}],
+    doctor_summary:'약사가 나프록센 중단과 아세트아미노펜 대체를 제안했습니다. 스피로노락톤 병용 시 신손상·고칼륨혈증 위험과 심부전 악화 가능성이 근거입니다. 종합감기약의 항콜린 성분은 도네페질과 길항할 수 있어 대체 제품이 필요합니다. 신기능 수치 확인 후 결정이 필요합니다.',
+    draft_opinion:'[약사 의견서 초안]\n1. 나프록센(NSAID)은 스피로노락톤과 병용 시 신손상·고칼륨혈증 위험이 있고 심부전에서 체액 저류를 악화시킬 수 있어 중단 및 아세트아미노펜 대체를 검토할 것을 제안합니다.\n2. 종합감기약의 항콜린 성분은 도네페질 효과와 길항하므로 항콜린 성분이 없는 제품으로의 대체를 권합니다.\n3. 결정 전 신기능(eGFR)과 칼륨 수치 확인이 필요합니다.',
+    patient_message:'의사 선생님과 약사 선생님이 함께 확인한 내용이에요. 지금 드시는 진통제와 감기약이 다른 약과 맞지 않을 수 있어서, 더 안전한 약으로 바꾸는 방법을 알려 드릴 거예요. 그때까지 스스로 약을 바꾸거나 끊지 마시고, 안내를 기다려 주세요.'};
+}
+/* AI 상담 */
+var EMERG=/가슴.{0,6}(아프|통증|답답|조여)|숨.{0,4}(차|막|못 ?쉬)|의식|기절|실신|마비|말이.{0,3}(어눌|안 ?나)|피를 ?토|검은 ?변|혈변|쓰러/;
+var CHANGE=/(끊어|끊을|끊고|그만 ?먹|중단|안 ?먹어도|빼도|바꿔도|늘려도|줄여도|두 ?배|더 ?먹어도|한꺼번에)/;
+var BLEED=/(피가|출혈|멍이|멍 ?들)/;
+function chatRules(){
+  var x=ctx('p');
+  return '당신은 고령 환자용 복약 도우미 "복약안심이"입니다. 규칙:\n1) 초등학생도 알아듣는 쉬운 존댓말로 3문장 이내로 답하세요.\n2) 아래 환자 데이터에 있는 정보만 쓰고 지어내지 마세요.\n3) 진단하지 말고, 약을 끊거나 바꾸거나 양을 조절하라고 절대 말하지 마세요.\n4) 다음이면 직접 답하지 말고 handoff를 true로: 새 증상이나 몸 이상 호소, 약 중단·변경·용량 질문, 데이터에 없는 약과 같이 먹어도 되는지 판단, 위험 조합(high)과 직접 관련된 질문, 확실하지 않을 때. 이때 reply는 "약사님께 연결해 드릴게요"라는 취지의 1~2문장, reason은 약사가 볼 한 줄 요약(전문 용어 가능)입니다.\n5) 약이 무엇에 쓰는지, 복용 시간, 용어 설명 같은 일반 정보는 답해도 됩니다.\n\n[환자 데이터]\n'+dataPack(x)+'\n\n[출력] JSON만: {"handoff":true|false,"reason":"...","reply":"..."}';
+}
+function scrollEnd(){setTimeout(function(){window.scrollTo(0,document.body.scrollHeight)},30)}
+function handFromChat(text,reason,emerg,reply){
+  var h=addHandoff({source:'AI 상담',text:text,reason:reason,emerg:emerg});
+  S.chat.push({role:'hand',text:reply||'이 내용은 제가 답하기보다 약사님이 직접 확인하는 게 안전해요. 약사님께 연결해 드릴게요.',emerg:emerg,hid:h.id});
+  save();render();scrollEnd();
+}
+function fbChat(text){
+  var d=null;DB.forEach(function(x){if(!d&&x.k.test(text))d=x});
+  if(d)S.chat.push({role:'ai',text:d.n+'은(는) '+d.use+' '+d.care+' 더 궁금하시면 약사님께 여쭤볼 수 있어요.',fb:true});
+  else S.chat.push({role:'ai',text:'지금은 AI 답변을 받을 수 없어요. 약사님께 대신 여쭤볼까요?',ask:true,q:text,fb:true});
+  save();render();scrollEnd();
+}
+function sendChat(text){
+  text=(text||'').trim();if(!text||R.chatBusy)return;
+  S.chat.push({role:'user',text:text});save();
+  if(EMERG.test(text)){handFromChat(text,'응급 가능 증상 호소',true);return}
+  if(CHANGE.test(text)){handFromChat(text,'복용 중단·변경·용량 관련 질문',false);return}
+  if(BLEED.test(text)){handFromChat(text,'출혈 증상 호소',false);return}
+  if(!sample){fbChat(text);return}
+  R.chatBusy=true;render();scrollEnd();
+  var turns=[{role:'user',content:chatRules()}].concat(S.chat.filter(function(m){return m.role==='user'||m.role==='ai'}).slice(-10).map(function(m){return {role:m.role==='user'?'user':'assistant',content:m.text}}));
+  sample.json(turns,{modelTier:'quick',cache:false}).then(function(d){
+    R.chatBusy=false;
+    if(d&&d.handoff){handFromChat(text,d.reason||'AI 판단: 약사 확인 필요',false,d.reply)}
+    else{S.chat.push({role:'ai',text:(d&&d.reply)||'다시 한 번 말씀해 주시겠어요?'});save();render();scrollEnd()}
+  }).catch(function(e){R.chatBusy=false;fbChat(text)});
+}
+/* AI 문진 질문 생성 */
+function runAIQ(){
+  var x=ctx('p');
+  var prompt='당신은 고령 환자의 약물 부작용을 조기에 찾는 문진 도우미입니다. 아래 환자의 복용약·질환을 보고, 기본 문진(어지러움, 넘어짐, 입마름·변비, 졸림, 숨참, 붓기, 출혈)에 없는 질문 2개를 만드세요. 초등학생도 이해할 쉬운 말, 예/아니요로 답할 수 있게. 진단하지 마세요.\n\n[환자 데이터]\n'+dataPack(x)+'\n\n[출력] JSON만: {"questions":[{"q":"질문","why":"왜 묻는지 쉬운 말 1문장 (관련 약 이름 포함)","sym":"예라고 답하면 기록할 짧은 증상명"}]}';
+  callAI('aiq',prompt,'quick',function(d){(d&&d.questions||[]).slice(0,2).forEach(function(q){S.aiQs.push({id:'ai'+uid(),q:q.q,why:q.why,sym:q.sym||'AI 문진 응답',tag:'ai',opts:['아니요','예']})});save()},function(){S.aiQs.push({id:'ai'+uid(),q:'요즘 밥맛이 없거나 속이 메스꺼운가요?',why:'메트포르민이나 진통소염제는 속을 불편하게 할 수 있어요. (시연용 예시)',sym:'식욕 저하·메스꺼움',tag:'ai',opts:['아니요','예']});save()});
+}
+/* 약 쉬운 설명 (DB에 없는 약) */
+function runMedAI(id){
+  var m=S.meds.find(function(x){return x.id===id});if(!m)return;
+  if(!sample){R.medAI[id]='AI를 쓸 수 없는 화면이에요. 약사님께 이 약에 대해 여쭤보세요.';render();return}
+  R.medAI[id]='AI가 쉬운 말로 정리하는 중…';render();
+  sample('어르신께 약 "'+m.name+'"을(를) 초등학생도 알아듣게 설명해 주세요. 무엇에 쓰는 약인지 1문장, 조심할 점 1문장. 확실하지 않으면 "정확한 정보는 약사님께 확인해 주세요"라고만 쓰세요. 진단·용량 지시 금지.',{modelTier:'quick'}).then(function(r){R.medAI[id]=r.text;render()}).catch(function(e){R.medAI[id]='설명을 받지 못했어요. 약사님께 여쭤봐 주세요.';render()});
+}
+/* 사진으로 약 찾기 */
+function onPhoto(file){
+  if(!file)return;
+  var url=URL.createObjectURL(file);
+  R.photo={url:url,busy:true,items:null,note:''};render();
+  var demo=function(note){R.photo.busy=false;R.photo.items=[{name:'비타민D 1000IU',type:'supp',note:'약통 라벨'},{name:'푸로세미드 40mg',type:'rx',note:'약봉투 인쇄'}];R.photo.note=note;render()};
+  if(!sample||!imgOK){demo('이 화면에서는 사진 인식을 쓸 수 없어 시연용 예시를 보여 드려요. 실제 서비스는 OCR과 제품 DB로 확인해요.');return}
+  sample.json('사진 속 의약품·영양제·약봉투·처방전에서 약 이름을 읽어 주세요. 보이지 않거나 확실하지 않은 것은 넣지 마세요. 추측 금지.\n[출력] JSON만: {"items":[{"name":"약 이름(용량 포함)","type":"rx|otc|supp","note":"어디서 읽었는지 짧게"}]}',{images:[file],modelTier:'default'}).then(function(d){
+    R.photo.busy=false;R.photo.items=((d&&d.items)||[]).filter(function(i){return i&&i.name});R.photo.note=R.photo.items.length?'AI가 읽은 결과예요. 사진과 비교해 맞는 것만 등록해 주세요.':'사진에서 약 이름을 찾지 못했어요. 라벨이 잘 보이게 다시 찍어 주세요.';render();
+  }).catch(function(e){demo(errCopy(e))});
+}
+
+/* ---------- 약 추가 / 같이 먹어도 되는지 ---------- */
+function addMed(name,type,when){
+  S.meds.push({id:'u'+uid(),name:name,type:type||'rx',src:type==='supp'?'직접 구입':type==='otc'?'약국 구입':'환자 등록',ago:0,when:(when&&when.length)?when:['아침'],isNew:true});
+  R.cand=null;save();render();toast(name+' 등록했어요');
+}
+function checkCand(name){
+  var x=ctx('p'),before=interactions(x).map(function(i){return i.id});
+  var tmp=withCls({id:'tmp',name:name,type:S.addType,ago:0,when:[]});
+  var after=interactions({meds:x.meds.concat([tmp]),syms:x.syms,conds:x.conds,hx:x.hx,age:x.age,flags:x.flags});
+  var known=!!infoOf(name);
+  R.cand={name:name,known:known,risks:after.filter(function(i){return before.indexOf(i.id)<0||i.items.indexOf(tmp.short)>-1})};
+  render();
+}
+
+/* ---------- 공통 뷰 조각 ---------- */
+var ICON={
+ home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-5h-6v5H5a1 1 0 0 1-1-1z"/></svg>',
+ meds:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8.5" width="18" height="7" rx="3.5" transform="rotate(-35 12 12)"/><path d="M9.4 8.3l5.2 7.4"/></svg>',
+ check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 11l2 2 4-4M9 17h6"/></svg>',
+ chat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 18l-1 3 4-2h9a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3v8"/><path d="M8.5 10h7M8.5 13.5h4"/></svg>',
+ me:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4.5-6 8-6s7 2 8 6"/></svg>',
+ speak:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>',
+ cam:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>'
+};
+function lvLabel(s){return {high:'높음',mid:'주의',low:'참고'}[s]}
+function vTimeline(x,compact){
+  var W=180,meds=x.meds.slice().sort(function(a,b){return b.ago-a.ago||a.name.localeCompare(b.name)});
+  var C=cascades(x),inC={},symC={};
+  C.forEach(function(c){c.causes.concat(c.treats).forEach(function(m){inC[m.id]=1});symC[c.sym.id]=1});
+  var pos=function(a){return 100-Math.min(a,W)/W*100};
+  var vl=[180,120,60,0].map(function(a){return '<div class="tl-vl" style="left:'+pos(a)+'%"></div>'}).join('');
+  var h='<div class="scroll-x"><div class="tl" role="img" aria-label="최근 6개월 약 시작 시점과 증상 발생 시점">';
+  h+='<div class="tl-row tl-axis"><div class="tl-lab"></div><div class="tl-track">'+[[180,'6개월 전'],[120,'4개월 전'],[60,'2개월 전'],[0,'오늘']].map(function(t){return '<span class="tl-tick'+(t[0]===0?' end':'')+'" style="left:'+pos(t[0])+'%">'+t[1]+'</span>'}).join('')+'</div></div>';
+  var syms=[];x.syms.filter(function(s){return s.ago<=W}).sort(function(a,b){return b.ago-a.ago}).forEach(function(s){var g=syms.find(function(o){return Math.abs(o.ago-s.ago)<=6});if(g){g.label+=' · '+s.label;if(symC[s.id])symC[g.id]=1}else syms.push({id:s.id,ago:s.ago,label:s.label})});
+  h+='<div class="tl-row sym-row"><div class="tl-lab"><b>증상</b><small>문진·기록</small></div><div class="tl-track">'+vl+syms.map(function(s,i){var p=pos(s.ago),right=p>70;return '<span class="smk'+(symC[s.id]?' casc':'')+'" style="left:'+p+'%" title="'+esc(s.label+' · '+agoLabel(s.ago))+'"></span><span class="sm-l" style="'+(right?'right:'+(100-p+1.5)+'%':'left:calc('+p+'% + 10px)')+';top:'+(i%2?20:2)+'px">'+esc(s.label)+'</span>'}).join('')+'</div></div>';
+  meds.forEach(function(m){
+    var p=pos(m.ago),old=m.ago>W,t=TYPE[m.type]||TYPE.rx;
+    h+='<div class="tl-row"><div class="tl-lab"><b title="'+esc(m.name)+'">'+esc(m.short.replace(/\s*\d[\d.,]*\s*(mg|IU|g|mcg|ml)\b.*$/i,''))+'</b><small>'+esc(m.src)+'</small></div><div class="tl-track">'+vl+
+      '<div class="bar'+(old?' old':'')+(inC[m.id]?' casc':'')+'" style="--c:'+t.c+';width:max(10px,'+(100-p)+'%)"></div>'+
+      (old?'<span class="bar-note" style="left:22px;color:var(--on-rx)">'+agoLabel(m.ago)+'부터</span>':'')+'</div></div>';
+  });
+  h+='</div></div><div class="tl-legend"><span><i style="background:var(--rx)"></i>처방약</span><span><i style="background:var(--otc)"></i>일반약</span><span><i style="background:var(--sup)"></i>영양제</span><span><i style="background:var(--hu);width:10px;height:10px;border-radius:2px;transform:rotate(45deg)"></i>증상</span>'+(C.length?'<span><i style="background:transparent;outline:2px solid var(--hu)"></i>처방 폭포 의심</span>':'')+'</div>';
+  if(C.length){
+    h+=C.map(function(c){return '<div class="casc-note"><b>'+(compact?'약 때문에 생긴 증상일 수 있어요':'처방 폭포 의심')+'</b> · '+esc(c.causes.map(function(m){return m.short}).join(', '))+' → '+esc(c.sym.label)+' → '+esc(c.treats.map(function(m){return m.short}).join(', '))+(compact?'<br><span style="font-size:14px">약사님이 순서를 확인해 드릴 거예요. 약은 그대로 드세요.</span>':'')+'</div>'}).join('');
+  }
+  return '<div class="'+(compact?'compact':'')+'">'+h+'</div>';
+}
+function riskCardP(i){
+  var asked=S.handoffs.some(function(h){return h.rid===i.id});
+  return '<div class="risk '+i.sev+'"><h3><span class="lv">'+lvLabel(i.sev)+'</span><span>'+esc(i.title)+'</span></h3><p style="margin-top:6px">'+esc(i.easy)+'</p><div class="chips" style="margin-top:8px">'+i.items.map(function(n){return '<span class="chip">'+esc(n)+'</span>'}).join('')+'</div><div class="row" style="margin-top:10px"><span class="basis">근거 <b>'+esc(i.basis)+'</b></span><span class="sp"></span>'+(asked?'<span class="tag t-hu">약사에게 물어봤어요</span>':'<button class="btn ghost sm" data-act="askRisk" data-id="'+i.id+'">약사에게 물어보기</button>')+'</div></div>';
+}
+
+/* ---------- 환자 앱 ---------- */
+function vHome(){
+  var x=ctx('p'),I=interactions(x),P=S.profile,d=new Date(),dk=todayK();
+  var bySlot=SLOTS.map(function(s){return {s:s,meds:x.meds.filter(function(m){return (m.when||[]).indexOf(s[0])>-1})}}).filter(function(o){return o.meds.length});
+  var strip='<div class="strip" role="list">'+bySlot.map(function(o){var k=dk+'|'+o.s[0],done=S.checks[k];
+    return '<div class="packet" role="listitem"><span class="when">'+o.s[1]+'</span><span class="slot">'+o.s[0]+'</span><div class="pills">'+o.meds.map(function(m){return '<span class="pl" style="--c:'+TYPE[m.type].c+'"><i></i>'+esc(m.short)+'</span>'}).join('')+'</div>'+
+      (done?'<button class="stamp" data-act="slot" data-k="'+k+'" aria-label="'+o.s[0]+' 복용 취소">먹었어요 '+done+'</button>':'<button class="btn block" data-act="slot" data-k="'+k+'">'+o.s[0]+' 약 먹었어요</button>')+'</div>'}).join('')+'</div>';
+  var shown=S.showAll?I:I.filter(function(i){return i.sev==='high'}).slice(0,3);
+  var pend=S.handoffs.filter(function(h){return h.status==='대기'});
+  var inbox=S.inbox.slice(0,3);
+  var h='<div class="greet"><div><p class="muted">'+(d.getMonth()+1)+'월 '+d.getDate()+'일 · 오늘도 천천히 챙겨요</p><p class="big">'+esc(P.name)+'님, 안녕하세요</p></div></div>';
+  if(pend.length)h+='<div class="hand" style="margin-top:16px"><div class="hh">약사 상담 대기 중 '+pend.length+'건</div><p class="hint" style="margin-top:4px">약사님이 확인하고 답을 보내 드려요. 급한 증상이면 119에 전화하세요.</p></div>';
+  if(inbox.length)h+='<div class="sec-title"><h2>받은 안내</h2></div><div class="card">'+inbox.map(function(m,i){return '<div class="msg" style="'+(i===0?'margin-top:0;':'')+'background:var(--hu-soft)"><div class="from">'+esc(m.from)+' · '+esc(m.when)+'</div>'+esc(m.text)+'</div>'}).join('')+'</div>';
+  h+='<div class="sec-title"><h2>오늘 드실 약</h2></div>'+strip;
+  h+='<div class="sec-title"><h2>함께 드실 때 조심할 약</h2><span class="tag t-rule">공식 기준으로 확인</span></div>';
+  h+=I.length?'<p class="hint" style="margin:-4px 2px 10px">등록한 약 전체를 식약처·DUR·노인주의약물 기준으로 살펴봤어요. 약을 스스로 끊지 마시고 약사님과 상의하세요.</p>'+shown.map(riskCardP).join('')+(I.length>shown.length||S.showAll?'<p style="margin-top:10px"><button class="linkbtn" data-act="showAll">'+(S.showAll?'중요한 것만 보기':'주의·참고 '+(I.length-shown.length)+'건 더 보기')+'</button></p>':''):'<div class="card"><p class="empty">지금 등록된 약에서는 알려진 위험 조합을 찾지 못했어요.</p></div>';
+  h+='<div class="sec-title"><h2>내 약 타임라인</h2></div><div class="card">'+vTimeline(x,true)+'</div>';
+  return h;
+}
+function vMeds(){
+  var x=ctx('p'),I=interactions(x);
+  var riskOf=function(m){return I.filter(function(i){return i.items.indexOf(m.short)>-1})};
+  var add='<div class="card"><h2>약·영양제 추가</h2><p class="hint" style="margin-top:2px">처방받은 약뿐 아니라 약국에서 산 약, 영양제·한약도 적어 주세요.</p>'+
+    '<div style="margin-top:12px"><label class="f" for="newMed">약 이름</label><input type="text" id="newMed" list="medList" placeholder="예: 푸로세미드, 비타민D" value="'+esc(S.newName||'')+'" data-bind="newName" autocomplete="off"><datalist id="medList">'+SUGGEST.map(function(s){return '<option value="'+s+'">'}).join('')+'</datalist></div>'+
+    '<div style="margin-top:10px"><span class="f" style="display:block;font-size:14px;color:var(--soft);font-weight:600;margin-bottom:5px">종류</span><div class="seg">'+Object.keys(TYPE).map(function(k){return '<button data-act="addType" data-v="'+k+'" aria-pressed="'+(S.addType===k)+'">'+TYPE[k].l+'</button>'}).join('')+'</div></div>'+
+    '<div style="margin-top:10px"><span class="f" style="display:block;font-size:14px;color:var(--soft);font-weight:600;margin-bottom:5px">드시는 때</span><div class="seg">'+SLOTS.map(function(s){return '<button data-act="addWhen" data-v="'+s[0]+'" aria-pressed="'+(S.addWhen.indexOf(s[0])>-1)+'">'+s[0]+'</button>'}).join('')+'</div></div>'+
+    '<div class="row" style="margin-top:14px"><button class="btn ghost" data-act="cand">같이 먹어도 되나요?</button><button class="btn" data-act="addmed">등록</button><span class="sp"></span><button class="btn ghost" data-act="photo">'+ICON.cam+'사진으로 찾기</button></div>';
+  if(R.cand){var c=R.cand;
+    add+='<div class="msg" style="background:'+(c.risks.length?'var(--hu-soft)':'var(--rule-soft)')+'"><div class="from">“'+esc(c.name)+'” 확인 결과</div>'+
+      (!c.known?'아직 정보가 없는 약이라 제가 판단할 수 없어요. 약사님께 여쭤볼게요.<div class="row" style="margin-top:8px"><button class="btn hu sm" data-act="askCand">약사에게 물어보기</button><button class="btn ghost sm" data-act="addmed">그래도 목록에 등록</button></div>'
+      :c.risks.length?c.risks.map(function(i){return '<p style="margin-top:6px"><span class="tag '+(i.sev==='high'?'t-danger':'t-warn')+'">'+lvLabel(i.sev)+'</span> <b>'+esc(i.title)+'</b><br>'+esc(i.easy)+'</p>'}).join('')+'<div class="row" style="margin-top:10px"><button class="btn hu sm" data-act="askCand">먹기 전에 약사에게 물어보기</button><button class="btn ghost sm" data-act="addmed">이미 먹고 있어요 · 등록</button></div>'
+      :'지금 드시는 약과 알려진 위험 조합은 찾지 못했어요. 처음 드시는 약은 약사님께 한 번 더 확인해 주세요.<div class="row" style="margin-top:8px"><button class="btn sm" data-act="addmed">등록</button></div>')+'</div>';}
+  add+='</div>';
+  if(R.photo){var p=R.photo;
+    add+='<div class="card" style="margin-top:14px"><h3>사진으로 찾은 약</h3><div class="photo-prev"><img src="'+p.url+'" alt="올린 사진"><div style="flex:1">'+(p.busy?'<p class="muted">사진 속 글자를 읽는 중…</p>':'<p class="hint">'+esc(p.note)+'</p>'+(p.items||[]).map(function(it,i){var t=TYPE[it.type]?it.type:'rx';return '<div class="row" style="margin-top:8px"><span class="tag '+TYPE[t].t+'">'+TYPE[t].l+'</span><b>'+esc(it.name)+'</b><span class="sp"></span><button class="btn sm" data-act="photoAdd" data-i="'+i+'">등록</button></div>'}).join(''))+'</div></div></div>';}
+  var groups=Object.keys(TYPE).map(function(k){var ms=x.meds.filter(function(m){return m.type===k});if(!ms.length)return '';
+    return '<div class="sec-title"><h2>'+TYPE[k].l+'</h2><span class="tag '+TYPE[k].t+'">'+ms.length+'개</span></div><div class="card">'+ms.map(function(m){var info=infoOf(m.name),open=S.openMed===m.id,rs=riskOf(m);
+      return '<div class="med"><span class="cap" style="--c:'+TYPE[k].c+'"></span><div style="flex:1;min-width:0"><button class="linkbtn" style="text-decoration:none;color:var(--ink);text-align:left;font-size:17px" data-act="openMed" data-id="'+m.id+'" aria-expanded="'+open+'">'+esc(m.name)+'</button>'+(m.isNew&&m.ago===0?' <span class="tag t-new">새로 등록</span>':'')+(rs.length?' <span class="tag '+(rs.some(function(r){return r.sev==='high'})?'t-danger':'t-warn')+'">조심할 조합 '+rs.length+'</span>':'')+'<div class="src">'+esc(m.src)+' · '+esc((m.when||[]).join('·'))+' · '+agoLabel(m.ago)+' 시작</div>'+
+      (open?'<div class="medinfo"><dl>'+(info?'<dt>무엇에 쓰는 약인가요</dt><dd>'+esc(info.use)+'</dd><dt>조심할 점</dt><dd>'+esc(info.care)+'</dd><dt>흔한 부작용</dt><dd>'+esc(info.se)+'</dd>':'<dt>쉬운 설명</dt><dd>'+(R.medAI[m.id]?esc(R.medAI[m.id]):'아직 정보가 없는 약이에요. <button class="linkbtn" data-act="medAI" data-id="'+m.id+'">AI에게 쉬운 설명 받기</button>')+'</dd>')+(rs.length?'<dt>함께 조심할 약</dt><dd>'+rs.map(function(r){return esc(r.title)}).join('<br>')+'</dd>':'')+'</dl><div class="row" style="margin-top:10px"><span class="hint">정보 출처: 식약처 허가사항 요약(시연용)</span><span class="sp"></span><button class="btn ghost sm" data-act="delMed" data-id="'+m.id+'">목록에서 빼기</button></div></div>':'')+'</div></div>'}).join('')+'</div>'}).join('');
+  return '<h2 style="margin:4px 2px 12px;font-size:22px">내 약</h2>'+add+groups+'<div class="sec-title"><h2>처방 타임라인</h2></div><div class="card">'+vTimeline(x,true)+'</div>';
+}
+function qBlock(q){
+  var a=S.answers[q.id];
+  return '<div class="q"><div class="q-h"><p>'+esc(q.q)+'</p><button class="speak" data-act="speak" data-t="'+esc(q.q)+'" aria-label="질문 소리로 듣기">'+ICON.speak+'</button></div>'+(q.why?'<div class="why"><b>왜 묻나요?</b> '+esc(q.why)+'</div>':'')+
+    '<div class="opts">'+q.opts.map(function(o,i){return '<button class="opt'+(i>0?' s2':'')+'" data-act="ans" data-q="'+q.id+'" data-i="'+i+'" aria-pressed="'+(a===i)+'">'+esc(o)+'</button>'}).join('')+'</div></div>';
+}
+function allQs(){return BASIC.concat(adaptiveQs(ctx('p')),S.aiQs)}
+function vCheck(){
+  var x=ctx('p'),A=adaptiveQs(x),n=Object.keys(S.answers).length;
+  return '<h2 style="margin:4px 2px 4px;font-size:22px">오늘 몸 상태</h2><p class="hint" style="margin:0 2px 12px">병을 진단하려는 게 아니라, 드시는 약 때문에 생길 수 있는 몸의 변화를 일찍 찾기 위한 질문이에요. 답은 약사님 화면에 바로 전달돼요.</p>'+
+   '<div class="sec-title"><h2>기본 질문</h2><span class="tag t-rx">'+n+'개 답함</span></div><div class="card">'+BASIC.map(qBlock).join('')+'</div>'+
+   (A.length?'<div class="sec-title"><h2>내 약에 맞춘 질문</h2><span class="tag t-ai">복용약으로 생성</span></div><div class="card">'+A.map(qBlock).join('')+'</div>':'')+
+   '<div class="sec-title"><h2>AI가 더 물어볼 것</h2><span class="tag t-ai">AI 생성</span></div><div class="card">'+(S.aiQs.length?S.aiQs.map(qBlock).join(''):'<p class="empty">복용약을 보고 AI가 질문을 2개 더 만들어요.</p>')+'<div class="row" style="margin-top:10px"><button class="btn ghost" data-act="aiq"'+(R.busy.aiq?' disabled':'')+'>'+(R.busy.aiq?'질문 만드는 중…':'질문 더 만들기')+'</button></div>'+(R.err.aiq?'<div class="err">'+esc(R.err.aiq)+'</div>':'')+'</div>';
+}
+function vChat(){
+  var msgs=S.chat.map(function(m){
+    if(m.role==='user')return '<div class="bub u">'+esc(m.text)+'</div>';
+    if(m.role==='ai')return '<div class="bub a"><span class="who">복약안심이 AI</span>'+esc(m.text)+(m.ask?'<div style="margin-top:8px"><button class="btn hu sm" data-act="askQ" data-q="'+esc(m.q)+'">약사에게 물어보기</button></div>':'')+'</div>';
+    if(m.role==='pharm')return '<div class="bub p"><span class="who">약사 답변</span>'+esc(m.text)+'</div>';
+    var h=S.handoffs.find(function(x){return x.id===m.hid});
+    return '<div class="hand"><div class="hh">AI가 답하지 않고 약사에게 연결했어요</div><p style="margin-top:4px">'+esc(m.text)+'</p>'+(m.emerg?'<div class="emerg">숨이 차거나 가슴이 아프거나 의식이 흐려지면 지금 바로 119에 전화하세요.</div>':'')+'<div class="row" style="margin-top:10px"><span class="tag '+(h&&h.status==='답변함'?'t-rule':'t-hu')+'">'+(h&&h.status==='답변함'?'약사 답변 도착':'약사 확인 대기 중')+'</span><span class="sp"></span><button class="btn ghost sm" data-act="call">약사와 전화 상담</button></div></div>';
+  }).join('');
+  if(!S.chat.length)msgs='<div class="bub a"><span class="who">복약안심이 AI</span>궁금한 약에 대해 편하게 물어보세요. 몸에 이상이 있거나 약을 바꾸는 이야기라면, 제가 답하지 않고 약사님께 바로 연결해 드려요.</div>';
+  if(R.chatBusy)msgs+='<div class="typing">답을 쓰는 중…</div>';
+  var sug=['나프록센은 무슨 약이에요?','홍삼 계속 먹어도 돼요?','요즘 잇몸에서 피가 나요','감기약을 끊어도 되나요?','도네페질은 언제 먹어요?'];
+  return '<h2 style="margin:4px 2px 4px;font-size:22px">AI 상담</h2><p class="hint" style="margin:0 2px 14px">위험할 수 있는 질문은 AI가 답하지 않고 약사에게 넘겨요.'+(sample?'':' 지금은 시연용 답변으로 동작해요.')+'</p><div class="chat">'+msgs+'</div>'+
+   '<div class="composer"><div class="sugg">'+sug.map(function(s){return '<button data-act="sugg" data-t="'+esc(s)+'">'+esc(s)+'</button>'}).join('')+'</div><div class="row"><label class="sr" for="chatIn">메시지</label><input type="text" id="chatIn" placeholder="약에 대해 물어보세요" data-bind="draftChat" value="'+esc(S.draftChat||'')+'" autocomplete="off"><button class="btn" data-act="send"'+(R.chatBusy?' disabled':'')+'>보내기</button></div></div>';
+}
+function vMe(){
+  var P=S.profile,c=S.consent;
+  var f=function(k,l,t){return '<div><label class="f" for="pf_'+k+'">'+l+'</label><input type="'+(t||'text')+'" id="pf_'+k+'" data-bind="profile.'+k+'" value="'+esc(P[k])+'"></div>'};
+  return '<h2 style="margin:4px 2px 12px;font-size:22px">내 정보</h2><div class="card"><div class="two" style="grid-template-columns:1fr 1fr">'+f('name','이름')+f('age','나이','number')+f('height','키(cm)','number')+f('weight','몸무게(kg)','number')+'</div>'+
+   '<div style="margin-top:12px"><span class="f" style="display:block;font-size:14px;color:var(--soft);font-weight:600;margin-bottom:5px">성별</span><div class="seg">'+['여','남'].map(function(s){return '<button data-act="sex" data-v="'+s+'" aria-pressed="'+(P.sex===s)+'">'+s+'성</button>'}).join('')+'</div></div>'+
+   '<div style="margin-top:12px"><span class="f" style="display:block;font-size:14px;color:var(--soft);font-weight:600;margin-bottom:5px">지금 앓고 있는 병</span><div class="seg">'+CONDS.map(function(s){return '<button data-act="cond" data-v="'+s+'" aria-pressed="'+(P.conds.indexOf(s)>-1)+'">'+s+'</button>'}).join('')+'</div></div>'+
+   '<div style="margin-top:12px"><label class="f" for="pf_hx">과거 병력·수술, 꼭 알려야 할 점</label><textarea id="pf_hx" data-bind="profile.hx">'+esc(P.hx)+'</textarea></div>'+
+   '<div class="two" style="margin-top:12px">'+f('life','생활습관(술·담배·카페인)')+f('adverse','약 알레르기·이상반응')+'</div>'+
+   '<p class="hint" style="margin-top:10px">입력하면 바로 저장되고 위험 확인에 반영돼요.</p></div>'+
+   '<div class="sec-title"><h2>의사·약사와 공유</h2></div><div class="card"><p class="hint">허락한 정보만 의·약사 화면에 보여요.</p>'+
+   [['med','드시는 약 목록'],['sym','증상·문진 답변'],['health','질환·과거 병력'],['life','생활습관']].map(function(o){return '<div class="switch"><span>'+o[1]+'</span><button class="tg" data-act="consent" data-k="'+o[0]+'" aria-pressed="'+!!c[o[0]]+'" aria-label="'+o[1]+' 공유"></button></div>'}).join('')+'</div>'+
+   '<div class="sec-title"><h2>내 정보를 본 기록</h2></div><div class="card">'+(S.log.length?'<ul class="log">'+S.log.map(function(l){return '<li>'+esc(l)+'</li>'}).join('')+'</ul>':'<p class="empty">아직 열람 기록이 없어요.</p>')+'</div>'+
+   '<p style="margin-top:18px"><button class="btn ghost sm" data-act="reset">시연 데이터 처음으로</button></p>';
+}
+function vPatient(){
+  var t=S.ptab;
+  return '<div class="pwrap">'+(t==='home'?vHome():t==='meds'?vMeds():t==='check'?vCheck():t==='chat'?vChat():vMe())+'</div>';
+}
+function vNav(){
+  var pend=S.handoffs.filter(function(h){return h.status==='답변함'&&!h.seen}).length;
+  return '<div class="pnav-in">'+[['home','홈'],['meds','내 약'],['check','문진'],['chat','AI 상담'],['me','내 정보']].map(function(o){return '<button data-act="ptab" data-v="'+o[0]+'"'+(S.ptab===o[0]?' aria-current="page"':'')+'>'+ICON[o[0]]+o[1]+(o[0]==='chat'&&pend?'<span class="dot">'+pend+'</span>':'')+'</button>'}).join('')+'</div>';
+}
+
+/* ---------- 의·약사 코파일럿 ---------- */
+function busyBtn(key,label,act,cls){return '<button class="btn '+(cls||'')+'" data-act="'+act+'"'+(R.busy[key]?' disabled':'')+'>'+(R.busy[key]?'AI가 생각하는 중…':label)+'</button>'}
+function vCopilot(){
+  var x=ctx('c'),P=S.profile,c=S.consent,I=interactions(x),C=cascades(x);
+  var todayN=S.meds.filter(function(m){return m.ago===0}).length+S.syms.filter(function(s){return s.ago===0}).length;
+  var sharedL=[c.med&&'복용약',c.sym&&'증상·문진',c.health&&'질환·병력',c.life&&'생활습관'].filter(Boolean);
+  var head='<div class="card"><div class="phead"><div style="flex:1;min-width:240px"><p class="big">'+esc(P.name)+' · '+P.age+'세 '+P.sex+'성</p><p class="hint">'+P.height+'cm · '+P.weight+'kg · 복용 '+x.meds.length+'개 (병원 3곳 + 약국·영양제)</p><div class="chips" style="margin-top:8px">'+(x.conds.length?x.conds.map(function(s){return '<span class="chip">'+esc(s)+'</span>'}).join(''):'<span class="chip">질환 정보 미공유</span>')+'</div>'+(x.hx?'<p class="hint" style="margin-top:8px">과거력 · '+esc(x.hx)+'</p>':'')+'</div>'+
+   '<div style="text-align:right"><span class="tag t-hu">환자 앱 실시간 반영 · 오늘 '+todayN+'건</span><p class="hint" style="margin-top:6px">공유 동의: '+(sharedL.join(', ')||'없음')+'</p></div></div>'+
+   '<div class="stages"><div class="stage"><span class="n">1</span><b>외부 근거 DB</b>식약처·DUR·Beers·DrugBank</div><div class="stage"><span class="n">2</span><b>1차 AI 스크리닝</b>4개 영역 폭넓게 탐색</div><div class="stage"><span class="n">3</span><b>2차 AI 독립 검증</b>근거·맥락 5개 항목</div><div class="stage s4"><span class="n">4</span><b>약사·의사 최종 확인</b>변경은 사람만 결정</div></div></div>';
+  /* 이관 */
+  var H=S.handoffs;
+  var hq='<div class="sec-title"><h2>이관 요청</h2><span class="stn h">4</span><span class="tag t-hu">대기 '+H.filter(function(h){return h.status==='대기'}).length+'건</span></div>'+
+   (H.length?H.map(function(h){var done=h.status!=='대기';return '<div class="hq'+(done?' done':'')+'"><div class="row"><span class="tag '+(h.emerg?'t-danger':'t-hu')+'">'+esc(h.source)+(h.emerg?' · 응급 가능':'')+'</span><b>'+esc(h.reason)+'</b><span class="sp"></span><span class="hint">'+esc(h.t)+'</span></div><blockquote>'+esc(h.text)+'</blockquote>'+
+     (done?'<p class="hint">답변 보냄: '+esc(h.reply||'')+'</p>':'<label class="sr" for="rp_'+h.id+'">답변</label><textarea id="rp_'+h.id+'" data-bind="drafts.'+h.id+'" placeholder="환자에게 보낼 답변을 쉬운 말로 적어 주세요">'+esc(S.drafts[h.id]||'')+'</textarea><div class="row" style="margin-top:8px"><button class="btn hu sm" data-act="reply" data-id="'+h.id+'">환자에게 답변 보내기</button><button class="btn ghost sm" data-act="call">전화 상담 연결</button></div>')+'</div>'}).join(''):'<div class="card"><p class="empty">대기 중인 이관 요청이 없어요. 환자가 위험 신호를 보내거나 AI가 답을 멈추면 여기에 올라와요.</p></div>');
+  /* 브리핑 */
+  var br='';if(R.brief){var b=R.brief;br='<div class="brief"><p style="font-weight:700">'+esc(b.summary)+'</p><h3 style="margin-top:12px">우선 확인할 것</h3><ol>'+(b.priorities||[]).map(function(p){return '<li><b>'+esc(p.title)+'</b> — '+esc(p.why)+(p.check?'<br><span class="hint">확인: '+esc(p.check)+'</span>':'')+'</li>'}).join('')+'</ol>'+((b.changes||[]).length?'<h3 style="margin-top:12px">최근 변화</h3><ul>'+b.changes.map(function(s){return '<li>· '+esc(s)+'</li>'}).join('')+'</ul>':'')+((b.questions||[]).length?'<h3 style="margin-top:12px">환자·보호자에게 물어볼 질문</h3><ol>'+b.questions.map(function(q){return '<li>'+esc(q)+'</li>'}).join('')+'</ol>':'')+'</div>'}
+  var s1='<div class="sec-title"><h2>방문 전 브리핑</h2><span class="tag t-ai">AI 생성</span></div><div class="card"><p class="hint">병원별 처방과 일반약·영양제, 환자 앱 기록을 한 장으로 요약해요. 사전 통화 없이도 의사와 약사가 같은 정보를 봐요.</p><div class="row" style="margin-top:12px">'+busyBtn('brief',R.brief?'브리핑 다시 만들기':'브리핑 만들기','brief')+'</div>'+(R.err.brief?'<div class="err">'+esc(R.err.brief)+'</div>':'')+br+'</div>';
+  /* 위험 조합 */
+  var RV=['미확인','임상적으로 중요','임상적 의미 낮음','근거 부족','환자에게 해당 없음'];
+  var s2='<div class="sec-title"><h2>위험 조합</h2><span class="stn">1</span><span class="tag t-rule">규칙 DB</span></div>'+(x.meds.length?(I.length?'<div class="card" style="padding:6px 10px"><div class="scroll-x" style="overflow-x:auto"><table style="min-width:640px"><tr><th style="width:72px">등급</th><th style="width:30%">조합 · 근거</th><th>임상적 설명</th><th style="width:96px">예상 위해도</th><th style="width:130px">약사 확인</th></tr>'+I.map(function(i){return '<tr><td><span class="tag '+(i.sev==='high'?'t-danger':i.sev==='mid'?'t-warn':'t-rule')+'">'+lvLabel(i.sev)+'</span><br><span class="hint">'+esc(i.area)+'</span></td><td><b>'+esc(i.title)+'</b><br><span class="hint">'+esc(i.items.join(', '))+'</span><div class="basis">근거 <b>'+esc(i.basis)+'</b></div></td><td>'+esc(i.pro)+'</td><td><span class="merp '+i.merp+'" title="NCC MERP 분류">'+esc(MERP[i.merp].split(' ')[0])+'</span><br><span class="hint" style="font-size:12.5px">'+esc(MERP[i.merp].split(' ').slice(1).join(' '))+'</span></td><td><label class="sr" for="rv_'+i.id+'">약사 확인</label><select id="rv_'+i.id+'" data-bind="review.'+i.id+'" style="min-width:120px;min-height:38px;padding:4px 8px;font-size:14px">'+RV.map(function(v){return '<option'+((S.review[i.id]||'미확인')===v?' selected':'')+'>'+v+'</option>'}).join('')+'</select></td></tr>'}).join('')+'</table></div><p class="hint" style="padding:6px 4px 8px">예상 위해도는 NCC MERP 분류(A~G, 0~6점)를 잠재 위험 추정에 적용한 것으로, 실제 발생한 위해가 아니에요.</p></div>':'<div class="card"><p class="empty">확인된 위험 조합이 없어요.</p></div>'):'<div class="card"><p class="empty">환자가 복용약 공유에 동의하지 않았어요.</p></div>');
+  /* 타임라인 */
+  var s3='<div class="sec-title"><h2>처방 타임라인 · 처방 폭포</h2><span class="stn">1</span><span class="tag t-rule">규칙 DB</span></div><div class="card"><p class="hint" style="margin-bottom:10px">약이 만든 증상을 새 질환으로 보고 또 다른 약을 더하는 연쇄를 시간 순서로 찾아요.</p>'+(x.meds.length?vTimeline(x,false):'<p class="empty">복용약 미공유</p>')+
+   C.map(function(k){return '<div class="risk mid" style="margin-top:12px"><h3><span class="lv">의심</span><span>'+esc(k.rule.title)+'</span></h3><p style="margin-top:4px">'+esc(k.rule.why)+'</p><p class="hint" style="margin-top:4px">확인: '+esc(k.rule.check)+'</p><div class="row" style="margin-top:8px">'+(S.flags[k.rule.id]?'<span class="tag t-hu">처방의에게 확인 요청함</span>':'<button class="btn hu sm" data-act="flag" data-id="'+k.rule.id+'">처방의에게 확인 요청</button>')+'</div></div>'}).join('')+'</div>';
+  /* 교차 검증 */
+  var cr='';if(R.cross){var X=R.cross,vm={};(X.verdicts||[]).forEach(function(v){vm[v.id]=v});
+    cr='<div class="scroll-x" style="margin-top:12px"><table style="min-width:560px"><tr><th>1차 AI 결과</th><th>2차 AI 검증</th><th></th></tr>'+(X.findings||[]).map(function(f){var v=vm[f.id]||{verdict:'—',reason:''},dis=v.verdict&&v.verdict!=='동의';return '<tr class="'+(dis?'dis':'')+'"><td><b>'+esc(f.title)+'</b><br><span class="hint">'+esc(f.area||'')+' · '+esc(f.severity||'')+'</span></td><td><b>'+esc(v.verdict)+'</b><br>'+esc(v.reason||'')+'</td><td>'+(dis?'<span class="tag t-hu">이견 · 전문가 우선 검토</span>':'<span class="tag t-ai">일치</span>')+'</td></tr>'}).join('')+'</table></div>'+
+    ((X.missed||[]).length?'<div class="risk mid" style="margin-top:12px"><h3><span class="lv">2차 AI가 추가</span><span>1차 AI가 놓쳤을 수 있는 것</span></h3>'+X.missed.map(function(m){return '<p style="margin-top:4px"><b>'+esc(m.title)+'</b> — '+esc(m.reason)+'</p>'}).join('')+'</div>':'')}
+  var s4='<div class="sec-title"><h2>AI 교차 검증</h2><span class="stn">2</span><span class="stn">3</span><span class="tag t-ai">AI 생성</span></div><div class="card"><p class="hint">1차 AI가 위험을 찾고, 2차 AI가 5가지 기준으로 독립 검증해요. 판단이 갈리면 “이견”으로 표시해 전문가가 먼저 보도록 해요. (데모는 같은 Claude 모델에 역할만 나눠 호출해요. 실제 서비스는 성향이 다른 서로 다른 AI를 씁니다.)</p><div class="row" style="margin-top:12px">'+busyBtn('cross',R.cross?'교차 검증 다시 실행':'교차 검증 실행','cross')+'</div>'+(R.err.cross?'<div class="err">'+esc(R.err.cross)+'</div>':'')+cr+'</div>';
+  /* 의견서 */
+  var op='';if(R.op){var O=R.op;op='<div style="margin-top:14px"><div class="two"><div class="msg"><div class="from">관련 맥락 (자동 표시)</div><ul>'+(O.context||[]).map(function(k){return '<li style="margin-top:6px"><b>'+esc(k.label)+'</b> '+esc(k.text)+'</li>'}).join('')+'</ul></div><div class="msg"><div class="from">의사에게 전할 처방 이유 요약</div>'+esc(O.doctor_summary)+'</div></div><div class="msg" style="white-space:pre-wrap"><div class="from">의견서 초안</div>'+esc(O.draft_opinion)+'</div><div class="msg" style="background:var(--hu-soft)"><div class="from">환자에게 보낼 쉬운 말 안내 (의사 확인 후 전송)</div>'+esc(O.patient_message)+'</div><div class="row" style="margin-top:12px">'+(R.opSent?'<span class="tag t-hu">환자 앱으로 전송했어요</span>':(R.opApproved?'<span class="tag t-hu">의사 확인 완료</span><button class="btn hu" data-act="sendOp">환자 앱으로 전송</button>':'<button class="btn hu" data-act="approve">의사 확인 완료로 표시</button><span class="hint">전송 전에 의사가 내용을 확인해요</span>'))+'</div></div>'}
+  var s5='<div class="sec-title"><h2>약사 의견 → 의견서 초안</h2><span class="stn h">4</span><span class="tag t-hu">약사 입력</span><span class="tag t-ai">AI 생성</span></div><div class="card"><label for="opin" class="f">약사 의견</label><textarea id="opin" data-bind="opinion">'+esc(S.opinion)+'</textarea><div class="row" style="margin-top:12px">'+busyBtn('op',R.op?'다시 만들기':'맥락 표시 · 초안 만들기','op')+'</div>'+(R.err.op?'<div class="err">'+esc(R.err.op)+'</div>':'')+op+'</div>';
+  /* 레일 */
+  var medsR='<div class="sec-title"><h2>통합 복약 목록</h2><span class="tag t-rule">'+x.meds.length+'개</span></div><div class="card">'+(x.meds.length?x.meds.slice().sort(function(a,b){return a.src.localeCompare(b.src)}).map(function(m){return '<div class="med" style="padding:9px 0"><span class="cap" style="--c:'+TYPE[m.type].c+'"></span><div style="flex:1"><div class="nm" style="font-size:15px">'+esc(m.name)+(m.ago===0?' <span class="tag t-new">방금 등록</span>':'')+'</div><div class="src">'+esc(m.src)+' · '+agoLabel(m.ago)+'</div></div></div>'}).join(''):'<p class="empty">복용약 미공유</p>')+'</div>';
+  var symR='<div class="sec-title"><h2>환자 문진</h2><span class="tag t-hu">환자 표현 → 표준 용어</span></div><div class="card">'+(c.sym?(x.syms.length?x.syms.slice().sort(function(a,b){return a.ago-b.ago}).map(function(s){return '<div class="term"><b>'+esc(s.label)+'</b><span class="hint">'+agoLabel(s.ago)+'</span><em>'+esc(s.tags.map(function(t){return TERM[t]||t}).filter(function(v,i,a){return a.indexOf(v)===i}).join(' · '))+'</em></div>'}).join('')+'<p class="hint" style="margin-top:8px">표준 용어는 진단 확정이 아니라 검토용 병기예요.</p>':'<p class="empty">기록된 증상이 없어요.</p>'):'<p class="empty">환자가 증상 공유에 동의하지 않았어요.</p>')+'</div>';
+  var lifeR='<div class="sec-title"><h2>생활습관 · 이상반응</h2></div><div class="card"><p>'+(x.life?esc(x.life):'<span class="empty">생활습관 미공유</span>')+'</p><p class="hint" style="margin-top:6px">약 알레르기 · '+esc(c.health?P.adverse:'미공유')+'</p></div>';
+  var logR='<div class="sec-title"><h2>열람 기록</h2></div><div class="card"><ul class="log">'+(S.log.slice(0,5).map(function(l){return '<li>'+esc(l)+'</li>'}).join('')||'<li>없음</li>')+'</ul></div>';
+  var lim=(R.fallback.brief||R.fallback.cross||R.fallback.op)?'<div class="note">일부 화면은 AI를 호출하지 못해 시연용 예시를 표시했어요. 규칙 DB 기반 항목은 실제로 계산된 결과예요.</div>':'';
+  return '<div class="cwrap">'+head+lim+'<div class="cgrid"><div>'+hq+s1+s2+s3+s4+s5+'</div><aside>'+medsR+symR+lifeR+logR+'</aside></div></div>';
+}
+
+/* ---------- render ---------- */
+function render(){
+  var y=window.scrollY,ae=document.activeElement,aid=ae&&ae.id,sel=ae&&ae.selectionStart;
+  $('#view').innerHTML=S.role==='p'?vPatient():vCopilot();
+  var nav=$('#pnav');nav.style.display=S.role==='p'?'':'none';nav.innerHTML=S.role==='p'?vNav():'';
+  document.querySelectorAll('[data-role]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.role===S.role))});
+  window.scrollTo(0,y);
+  if(aid){var el=document.getElementById(aid);if(el&&el.focus){el.focus({preventScroll:true});try{if(sel!=null&&el.setSelectionRange)el.setSelectionRange(sel,sel)}catch(e){}}}
+}
+function setPath(obj,path,v){var p=path.split('.'),o=obj;for(var i=0;i<p.length-1;i++)o=o[p[i]];o[p[p.length-1]]=v}
+
+/* ---------- events ---------- */
+document.addEventListener('click',function(e){
+  var rb=e.target.closest('[data-role]');
+  if(rb){var r=rb.dataset.role;if(r!==S.role){S.role=r;if(r==='c'){var c=S.consent,l=[c.med&&'복용약',c.sym&&'증상',c.health&&'건강정보',c.life&&'생활습관'].filter(Boolean);S.log.unshift(todayK().slice(5).replace('-','/')+' '+nowT()+' · 의·약사 코파일럿 열람 ('+(l.join('·')||'공유 항목 없음')+')');S.log=S.log.slice(0,8)}save();render();window.scrollTo(0,0)}return}
+  var t=e.target.closest('[data-act]');if(!t)return;var a=t.dataset.act,d=t.dataset;
+  switch(a){
+   case 'ptab':S.ptab=d.v;if(d.v==='chat')S.handoffs.forEach(function(h){if(h.status==='답변함')h.seen=true});save();render();window.scrollTo(0,0);if(d.v==='chat')scrollEnd();break;
+   case 'slot':S.checks[d.k]=S.checks[d.k]?undefined:nowT();if(!S.checks[d.k])delete S.checks[d.k];save();render();break;
+   case 'showAll':S.showAll=!S.showAll;save();render();break;
+   case 'askRisk':var i=interactions(ctx('p')).find(function(r){return r.id===d.id});if(i){addHandoff({source:'위험 알림',rid:i.id,text:'“'+i.title+'” 알림에 대해 상담을 요청했어요.',reason:i.title+' ('+i.basis+')'});render();toast('약사님께 상담을 요청했어요')}break;
+   case 'addType':S.addType=d.v;save();render();break;
+   case 'addWhen':var w=S.addWhen,k=w.indexOf(d.v);if(k>-1)w.splice(k,1);else w.push(d.v);save();render();break;
+   case 'cand':var n=(S.newName||'').trim();if(!n){toast('약 이름을 먼저 적어 주세요');$('#newMed').focus();break}checkCand(n);break;
+   case 'addmed':var n2=((R.cand&&R.cand.name)||S.newName||'').trim();if(!n2){toast('약 이름을 먼저 적어 주세요');break}S.newName='';addMed(n2,S.addType,S.addWhen.slice());break;
+   case 'askCand':addHandoff({source:'새 약 확인',text:'“'+R.cand.name+'”을(를) 지금 드시는 약과 같이 먹어도 되는지 문의',reason:R.cand.known?('새 약 병용 확인: '+R.cand.risks.map(function(r){return r.title}).join(', ')):'DB에 없는 약 병용 확인'});R.cand=null;save();render();toast('약사님께 물어봤어요');break;
+   case 'photo':$('#photoIn').value='';$('#photoIn').click();break;
+   case 'photoAdd':var it=R.photo&&R.photo.items&&R.photo.items[+d.i];if(it){addMed(it.name,TYPE[it.type]?it.type:'rx',['아침']);R.photo.items.splice(+d.i,1);render()}break;
+   case 'openMed':S.openMed=S.openMed===d.id?null:d.id;save();render();break;
+   case 'medAI':runMedAI(d.id);break;
+   case 'delMed':S.meds=S.meds.filter(function(m){return m.id!==d.id});S.openMed=null;save();render();toast('목록에서 뺐어요');break;
+   case 'ans':var q=allQs().find(function(x){return x.id===d.q});if(q)answer(q,+d.i);break;
+   case 'speak':if(window.speechSynthesis){speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(d.t);u.lang='ko-KR';u.rate=.9;speechSynthesis.speak(u)}else toast('이 기기에서는 소리 읽기를 쓸 수 없어요');break;
+   case 'aiq':runAIQ();break;
+   case 'sugg':sendChat(d.t);break;
+   case 'send':var v=S.draftChat||'';S.draftChat='';sendChat(v);break;
+   case 'askQ':handFromChat(d.q,'AI 미응답 질문 (환자 요청)',false);break;
+   case 'call':toast('시연: 담당 약사 전화 상담을 연결해요');break;
+   case 'sex':S.profile.sex=d.v;save();render();break;
+   case 'cond':var cs=S.profile.conds,ci=cs.indexOf(d.v);if(ci>-1)cs.splice(ci,1);else cs.push(d.v);save();render();break;
+   case 'consent':S.consent[d.k]=!S.consent[d.k];save();render();break;
+   case 'reset':if(confirm('시연 데이터를 처음 상태로 되돌릴까요?')){S=blank();R={brief:null,cross:null,op:null,opApproved:false,opSent:false,busy:{},err:{},chatBusy:false,photo:null,cand:null,medAI:{},fallback:{}};save();render();window.scrollTo(0,0)}break;
+   case 'reply':var h=S.handoffs.find(function(x){return x.id===d.id}),txt=(S.drafts[d.id]||'').trim();if(!txt){toast('답변을 먼저 적어 주세요');break}h.status='답변함';h.reply=txt;h.seen=false;S.chat.push({role:'pharm',text:txt});S.inbox.unshift({from:'담당 약사',when:nowT(),text:txt});delete S.drafts[d.id];save();render();toast('환자 앱으로 답변을 보냈어요');break;
+   case 'brief':runBrief();break;
+   case 'cross':runCross();break;
+   case 'op':runOp();break;
+   case 'flag':S.flags[d.id]=true;save();render();break;
+   case 'approve':R.opApproved=true;render();break;
+   case 'sendOp':S.inbox.unshift({from:'약사·의사 확인',when:nowT(),text:R.op.patient_message});R.opSent=true;save();render();toast('환자 앱 홈에 안내가 도착했어요');break;
+  }
+});
+document.addEventListener('input',function(e){
+  var t=e.target,b=t.dataset&&t.dataset.bind;if(!b)return;
+  var v=t.value;if(b==='profile.age'||b==='profile.height'||b==='profile.weight')v=Number(v)||0;
+  setPath(S,b,v);save();
+  if(b==='newName'&&R.cand){R.cand=null;var pos=t.selectionStart;render()}
+});
+document.addEventListener('change',function(e){var t=e.target;if(t.tagName==='SELECT'&&t.dataset.bind){setPath(S,t.dataset.bind,t.value);save()}});
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Enter'||e.isComposing)return;
+  if(e.target.id==='chatIn'){e.preventDefault();var v=S.draftChat||'';S.draftChat='';sendChat(v)}
+  else if(e.target.id==='newMed'){e.preventDefault();var n=(S.newName||'').trim();if(n)checkCand(n)}
+});
+$('#photoIn').addEventListener('change',function(e){onPhoto(e.target.files&&e.target.files[0])});
+render();
+})();
+</script>
+</body>
+</html>
